@@ -8,9 +8,11 @@
 
 from PyQt4 import QtCore, QtGui
 import random
+from string import replace
 
 from core.character import Character
 import core.background as background
+import core.race as race
 
 
 try:
@@ -29,12 +31,47 @@ except AttributeError:
 
 def rollDice(number_dice, type_dice):
     """ roll (number_dice)d(type_dice)
+    :param int number_dice: Number of dice to roll
+    :param int type_dice: Type of dice (d4, d6, ...)
+    :returns: Value
     """
     value = 0
     for i in range(number_dice):
         value += random.randint(1,type_dice)
     return value
 
+def rollAbility():
+    """ Roll 4d6 and remove the lowest one.
+    :return: Value of the rolls
+    """
+    rolls = [rollDice(1,6), rollDice(1,6), rollDice(1,6), rollDice(1,6)]
+    min_ind = rolls.index(min(rolls))
+    value = 0
+    for i in range(len(rolls)):
+        print rolls[i]
+        if i != min_ind:
+            value += rolls[i]
+    return value
+
+def choiceLabel(title):
+    """ Make the title nice
+    :param str title: String to process
+    :returns: str with a nice presentation
+    """
+    title = title.title()
+    return replace(title, '_', ' ')
+
+def getLanguages(allow_exotic=False):
+    """ Return the list of available languages
+    :param bool allow_exotic: Add the exotic languages to the list
+    :returns: [str] List of all the available languages
+    """
+    languages = ['Common', 'Dwarvish', 'Elvish', 'Giant', 'Gnomish',
+                 'Goblin', 'Halfling', 'Orc']
+    if allow_exotic:
+        languages.extend(['Abyssal', 'Celestial', 'Draconic', 'Deep Speech',
+                          'Infernal', 'Primordial', 'Sylvan', 'Undercommon'])
+    return languages
 
 class CharacterGenerator(object):
     def setupUi(self, MainWindow):
@@ -45,6 +82,7 @@ class CharacterGenerator(object):
         # by default, no character is loaded
         self.character = None
         self.background_parser = background.BackgroundParser()
+        self.race_parser = race.RaceParser()
         
         # Create main tab
         self.centralwidget = QtGui.QWidget(MainWindow)
@@ -115,10 +153,104 @@ class CharacterGenerator(object):
     def removeImage(self):
         print "Not implemented yet"
 
+    # --------------- DESCRIPTION FUNCTIONS -------------------------------
+        
     def rollAbilities(self):
-        print "Not implemented yet"
+        """ Roll 6 times 4d6 and remove the lowest one
+        """
+        roll = rollAbility()
+        self.tab1_ability_value_1.setText(str(roll))
+        roll = rollAbility()
+        self.tab1_ability_value_2.setText(str(roll))
+        roll = rollAbility()
+        self.tab1_ability_value_3.setText(str(roll))
+        roll = rollAbility()
+        self.tab1_ability_value_4.setText(str(roll))
+        roll = rollAbility()
+        self.tab1_ability_value_5.setText(str(roll))
+        roll = rollAbility()
+        self.tab1_ability_value_6.setText(str(roll))
+        
+    # --------------- RACE FUNCTIONS --------------------------------------
+    def changeRace(self, race):
+        """ Action that will be done when the user change the race
+        """
+        self.tab2_race_description.setText(self.race_parser.getDescription(race))
+        self.updateSubrace()
 
+    def updateSubrace(self):
+        """ Update the list of subrace
+        """
+        race = self.tab2_race_choice_combo.currentText()
+        self.tab2_subrace_choice_combo.clear()
+        for i in self.race_parser.getListSubrace(race):
+            self.tab2_subrace_choice_combo.addItem(i)
+        self.changeSubrace(self.tab2_subrace_choice_combo.currentText())
+        
+    def changeSubrace(self, subrace):
+        #self.tab2_subrace_description = QtGui.QTextBrowser(self.tab2_subrace_layout)
+        #self.tab2_subrace_choice_combo = QtGui.QComboBox(self.tab2_subrace_layout)
+        #self.tab2_race_choice_combo = QtGui.QComboBox(self.tab2_race_layout)
+        race = self.tab2_race_choice_combo.currentText()
+        self.tab2_subrace_description.setText(
+            self.race_parser.getSubraceDescription(race, subrace))
+        self.changeRaceTabChoice()
+
+    def changeRaceTabChoice(self):
+        """ Update the race choice widgets
+        :param str background: race name
+        """
+        race = self.tab2_race_choice_combo.currentText()
+        subrace = self.tab2_subrace_choice_combo.currentText()
+        list_choice = self.race_parser.getChoice(race)
+        list_choice.extend(self.race_parser.getSubraceChoice(race, subrace))
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+
+        for i in range(len(self.tab2_choice_list)):
+            self.tab2_choices_layout.removeWidget(self.tab2_choice_list[i])
+            self.tab2_choice_list[i].deleteLater()
+
+        j = -1
+        self.tab2_choice_list = []
+        for choice in list_choice:
+            for i in range(choice[2]):
+                j += 1
+                """
+                self.tab2_choices_layout.addWidget(self.tab2_choice_1_label, 0, 0, 1, 1)
+                """
+                label = QtGui.QLabel(choiceLabel(choice[0]), self.tab2)
+                label.setSizePolicy(sizePolicy)
+                label.setAlignment(
+                    QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+                self.tab2_choices_layout.addWidget(label, int(j/4), j%4)
+                self.tab2_choice_list.append(label)
+                j += 1
+                combo = QtGui.QComboBox(self.tab2)
+                if choice[0] == 'language' and choice[1][0] == 'any':
+                    choice = (choice[0], getLanguages())
+                for i in choice[1]:
+                    combo.addItem(i)
+                self.tab2_choices_layout.addWidget(combo, int(j/4), j%4)
+                self.tab2_choice_list.append(combo)
+
+        if j < 3:
+            while j<3:
+                j += 1
+                label = QtGui.QLabel("", self.tab2)
+                label.setSizePolicy(sizePolicy)
+                self.tab2_choices_layout.addWidget(label, int(j/4), j%4)
+                self.tab2_choice_list.append(label)
+
+
+    # --------------- BACKGROUND FUNCTIONS ---------------------------------
+        
     def changeBackground(self, background):
+        """ action that will be done when the user change the background
+        :param str background: New background
+        """
         self.tab5_ideal_combo.clear()
         self.tab5_background_description.setText(
             self.background_parser.getDescription(background))
@@ -131,14 +263,20 @@ class CharacterGenerator(object):
         self.tab5_bond_spinbox.setMaximum(bond_max)
         for ideal in self.background_parser.getListIdeal(background):
             self.tab5_ideal_combo.addItem(ideal)
-        self.changeChoice(background)
+        self.changeBackgroundChoice(background)
 
     def changeIdealDescription(self, ideal):
+        """ Update the text of the ideal
+        :param str ideal: New Ideal
+        """
         background = self.tab5_background_combo.currentText()
         self.tab5_ideal_description.setText(
             self.background_parser.getIdealDescription(background, ideal))
 
     def changePersonalityDescription(self, personality):
+        """ Update the description text of the personality
+        :param personality: Not used (present due to Qt)
+        """
         background = self.tab5_background_combo.currentText()
         perso1 = self.tab5_personality_spinbox_1.value()
         perso2 = self.tab5_personality_spinbox_2.value()
@@ -153,7 +291,10 @@ class CharacterGenerator(object):
         text = "<p>" + perso1 + "</p> <p>" + perso2 + "</p>"
         self.tab5_personality_description.setText(text)
 
-    def changeChoice(self, background):
+    def changeBackgroundChoice(self, background):
+        """ Update the background choice widgets
+        :param str background: Background name
+        """
         list_choice = self.background_parser.getChoice(background)
         sizePolicy = QtGui.QSizePolicy(
             QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
@@ -174,34 +315,46 @@ class CharacterGenerator(object):
         self.tab5_choice_list.append(spacer)
         self.horizontalLayout_33.addItem(spacer)
         for choice in list_choice:
-            label = QtGui.QLabel(choice[0].title(), self.tab5_choice_layout)
-            label.setSizePolicy(sizePolicy)
-            label.setAlignment(
-                QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-            self.horizontalLayout_33.addWidget(label)
-            self.tab5_choice_list.append(label)
-            combo = QtGui.QComboBox(self.tab5_choice_layout)
-            for i in choice[1]:
-                combo.addItem(i)
-            self.horizontalLayout_33.addWidget(combo)
-            self.tab5_choice_list.append(combo)
-            spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-            self.tab5_choice_list.append(spacer)
-            self.horizontalLayout_33.addItem(spacer)
+            for i in range(choice[2]):
+                label = QtGui.QLabel(choiceLabel(choice[0]), self.tab5_choice_layout)
+                label.setSizePolicy(sizePolicy)
+                label.setAlignment(
+                    QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+                self.horizontalLayout_33.addWidget(label)
+                self.tab5_choice_list.append(label)
+                combo = QtGui.QComboBox(self.tab5_choice_layout)
+                if choice[0] == 'language' and choice[1][0] == 'any':
+                    choice = (choice[0], getLanguages())
+                for i in choice[1]:
+                    combo.addItem(i)
+                self.horizontalLayout_33.addWidget(combo)
+                self.tab5_choice_list.append(combo)
+                spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+                self.tab5_choice_list.append(spacer)
+                self.horizontalLayout_33.addItem(spacer)
         
         
     def changeFlawDescription(self, flaw):
+        """ Update the description of the flaw
+        :param int flaw: value of the flaw
+        """
         background = self.tab5_background_combo.currentText()
         self.tab5_flaw_description.setText(
             self.background_parser.getFlawDescription(background, flaw))
 
     def changeBondDescription(self, bond):
+        """ Update the description of the bond
+        :param int bond: value of the bond
+        """
         background = self.tab5_background_combo.currentText()
         self.tab5_bond_description.setText(
             self.background_parser.getBondDescription(background, bond))
 
     def fullRandomBackground(self):
-        nber_background = self.background_parser.getNumberBackground()
+        """ Choose randomly the background, personality, ideal, bond
+        and flaw of the character
+        """
+        nber_background = len(self.background_parser.getListBackground())
         self.tab5_background_combo.setCurrentIndex(
             rollDice(1, nber_background) - 1)
         background = self.tab5_background_combo.currentText()
@@ -209,11 +362,14 @@ class CharacterGenerator(object):
         self.randomPersonality()
 
     def randomPersonality(self):
+        """ Choose the personality of the character (bond, flaw, ideal,
+        personality)
+        """
         background = self.tab5_background_combo.currentText()
         nber_perso = self.background_parser.getNumberPersonality(background)
         nber_flaw = self.background_parser.getNumberFlaw(background)
         nber_bond = self.background_parser.getNumberBond(background)
-        nber_ideal = self.background_parser.getNumberIdeal(background)
+        nber_ideal = len(self.background_parser.getListIdeal(background))
         # bond
         self.tab5_bond_spinbox.setValue(rollDice(1, nber_bond))
         # flaw
@@ -773,9 +929,11 @@ class CharacterGenerator(object):
         self.tab2_race_choice_layout = QtGui.QHBoxLayout()
         self.tab2_race_choice_layout.setObjectName(_fromUtf8("tab2_race_choice_layout"))
         self.tab2_race_choice_combo = QtGui.QComboBox(self.tab2_race_layout)
+        for i in self.race_parser.getListRace():
+            self.tab2_race_choice_combo.addItem(i)
+        self.tab2_race_choice_combo.activated[str].connect(self.changeRace)
         self.tab2_race_choice_combo.setMinimumSize(QtCore.QSize(150, 5))
         self.tab2_race_choice_combo.setObjectName(_fromUtf8("tab2_race_choice_combo"))
-        self.tab2_race_choice_combo.addItem("Dwarf")
         self.tab2_race_choice_layout.addWidget(self.tab2_race_choice_combo)
         spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.tab2_race_choice_layout.addItem(spacerItem4)
@@ -793,6 +951,7 @@ class CharacterGenerator(object):
         self.tab2_subrace_choice_layout = QtGui.QHBoxLayout()
         self.tab2_subrace_choice_layout.setObjectName(_fromUtf8("tab2_subrace_choice_layout"))
         self.tab2_subrace_choice_combo = QtGui.QComboBox(self.tab2_subrace_layout)
+        self.tab2_subrace_choice_combo.activated[str].connect(self.changeSubrace)
         self.tab2_subrace_choice_combo.setMinimumSize(QtCore.QSize(150, 5))
         self.tab2_subrace_choice_combo.setObjectName(_fromUtf8("tab2_subrace_choice_combo"))
         self.tab2_subrace_choice_combo.addItem("Mountain Dwarf")
@@ -810,28 +969,10 @@ class CharacterGenerator(object):
         self.tab2_choices_layout = QtGui.QGridLayout()
         self.tab2_choices_layout.setContentsMargins(-1, -1, -1, 0)
         self.tab2_choices_layout.setObjectName(_fromUtf8("tab2_choices_layout"))
-        self.tab2_choice_1_label = QtGui.QLabel("Skill", self.tab2)
-        self.tab2_choice_1_label.setObjectName(_fromUtf8("tab2_choice_1_label"))
-        self.tab2_choices_layout.addWidget(self.tab2_choice_1_label, 0, 0, 1, 1)
-        self.tab2_choice_1_combo = QtGui.QComboBox(self.tab2)
-        self.tab2_choice_1_combo.setObjectName(_fromUtf8("tab2_choice_1_combo"))
-        self.tab2_choice_1_combo.addItem("Insight")
-        self.tab2_choices_layout.addWidget(self.tab2_choice_1_combo, 0, 1, 1, 1)
-        self.tab2_choice_2_combo = QtGui.QComboBox(self.tab2)
-        self.tab2_choice_2_combo.setObjectName(_fromUtf8("tab2_choice_2_combo"))
-        self.tab2_choice_2_combo.addItem("Religion")
-        self.tab2_choices_layout.addWidget(self.tab2_choice_2_combo, 0, 3, 1, 1)
-        self.tab2_choice_3_label = QtGui.QLabel("Weapon Proficiency", self.tab2)
-        self.tab2_choice_3_label.setObjectName(_fromUtf8("tab2_choice_3_label"))
-        self.tab2_choices_layout.addWidget(self.tab2_choice_3_label, 1, 0, 1, 1)
-        self.tab2_choice_2_label = QtGui.QLabel("Skill", self.tab2)
-        self.tab2_choice_2_label.setObjectName(_fromUtf8("tab2_choice_2_label"))
-        self.tab2_choices_layout.addWidget(self.tab2_choice_2_label, 0, 2, 1, 1)
-        self.tab2_choice_3_combo = QtGui.QComboBox(self.tab2)
-        self.tab2_choice_3_combo.setObjectName(_fromUtf8("tab2_choice_3_combo"))
-        self.tab2_choice_3_combo.addItem("Club")
-        self.tab2_choices_layout.addWidget(self.tab2_choice_3_combo, 1, 1, 1, 1)
+        self.tab2_choice_list = []
         self.verticalLayout_26.addLayout(self.tab2_choices_layout)
+
+        self.changeRace(self.tab2_race_choice_combo.currentText())
         self.main_tab.addTab(self.tab2, "Race")
 
 
@@ -1207,7 +1348,6 @@ class CharacterGenerator(object):
         self.horizontalLayout_16.addLayout(self.tab5_background_choice_layout)
         self.tab5_background_description = QtGui.QTextBrowser(self.tab5_background_layout)
         self.tab5_background_description.setObjectName(_fromUtf8("tab5_background_description"))
-        self.tab5_background_description.setText(self.background_parser.getDescription('Acolyte'))
         self.tab5_background_combo.activated[str].connect(self.changeBackground)
         self.horizontalLayout_16.addWidget(self.tab5_background_description)
         self.verticalLayout_10.addWidget(self.tab5_background_layout)
@@ -1303,6 +1443,7 @@ class CharacterGenerator(object):
         self.tab5_lower_layout.addWidget(self.tab5_flaw_layout)
         self.verticalLayout_10.addLayout(self.tab5_lower_layout)
 
+        self.fullRandomBackground()
         self.main_tab.addTab(self.tab5, "Background")
 
         

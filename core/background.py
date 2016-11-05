@@ -1,5 +1,4 @@
 import xml.etree.ElementTree as ET
-import proficiency
 
 class BackgroundParser():
     def __init__(self):
@@ -16,12 +15,6 @@ class BackgroundParser():
         for child in self.root:
             list_background.append(child.get('name'))
         return list_background
-
-    def getNumberBackground(self):
-        number = 0
-        for child in self.root:
-            number += 1
-        return number
 
     def getDescription(self, name):
         child = self.getBackground(name)
@@ -43,16 +36,6 @@ class BackgroundParser():
             list_ideal.append(ideal.get('name'))
         return list_ideal
 
-    def getNumberIdeal(self, background):
-        child = self.getBackground(background)
-        if child == None:
-            return None
-        ideals = child.find('ideal')
-        number = 0
-        for ideal in ideals.findall('description'):
-            number += 1
-        return number
-
     def getIdealDescription(self, background, ideal_name):
         child = self.getBackground(background)
         for ideal in child.find('ideal'):
@@ -65,11 +48,26 @@ class BackgroundParser():
             if int(flaw.get('value')) == value:
                 return flaw.text
 
+    def getNumberFlaw(self, background):
+        value = 0
+        child = self.getBackground(background)
+        for flaw in child.find('flaw'):
+            value += 1
+        return value
+
+            
     def getBondDescription(self, background, value):
         child = self.getBackground(background)
         for bond in child.find('bond'):
             if int(bond.get('value')) == value:
                 return bond.text
+
+    def getNumberBond(self, background):
+        value = 0
+        child = self.getBackground(background)
+        for bond in child.find('bond'):
+            value += 1
+        return value
 
     def getPersonalityDescription(self, background, value):
         child = self.getBackground(background)
@@ -78,31 +76,17 @@ class BackgroundParser():
                 return personality.text
 
     def getNumberPersonality(self, background):
+        value = 0
         child = self.getBackground(background)
-        number = 0
         for personality in child.find('personality'):
-            number += 1
-        return number
-
-    def getNumberBond(self, background):
-        child = self.getBackground(background)
-        number = 0
-        for bond in child.find('bond'):
-            number += 1
-        return number
-
-    def getNumberFlaw(self, background):
-        child = self.getBackground(background)
-        number = 0
-        for flaw in child.find('flaw'):
-            number += 1
-        return number
+            value += 1
+        return value
 
     def getChoice(self, background):
         child = self.getBackground(background)
         list_choice = []
         for choice in child.find('choice'):
-            value = (choice.tag, [])
+            value = (choice.tag, [], int(choice.get('quantity')))
             for key in choice.findall('key'):
                 value[1].append(key.get('name'))
             list_choice.append(value)

@@ -118,7 +118,7 @@ class ToolProficiency(Enum):
     thieves = 36
     # Vehicles
     land_vehicles = 37
-    water_vehicles = 38
+    water_vehicles = 38    
 
 class ObjectProficiency():
     def __init__(self):
