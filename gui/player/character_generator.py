@@ -159,10 +159,16 @@ class CharacterGenerator(object):
             QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        
-        for widget in self.tab5_choice_list:
-            self.horizontalLayout_33.removeWidget(widget)
-            widget.deleteLater()
+
+        for i in range(len(self.tab5_choice_list)):
+            # delete spacer
+            if i%3 == 0:
+                self.horizontalLayout_33.removeItem(self.tab5_choice_list[i])
+            # delete widget
+            else:
+                self.horizontalLayout_33.removeWidget(self.tab5_choice_list[i])
+                self.tab5_choice_list[i].deleteLater()
+                
         self.tab5_choice_list = []
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.tab5_choice_list.append(spacer)
@@ -1211,7 +1217,6 @@ class CharacterGenerator(object):
         self.tab5_choice_layout = QtGui.QGroupBox("Choices", self.tab5)
         self.tab5_choice_layout.setObjectName(_fromUtf8("tab5_choice_layout"))
         self.horizontalLayout_33 = QtGui.QHBoxLayout(self.tab5_choice_layout)
-        self.horizontalLayout_33.setObjectName(_fromUtf8("horizontalLayout_33"))
         #
         self.tab5_choice_list = []
         self.tab5_lower_layout.addWidget(self.tab5_choice_layout)
