@@ -13,6 +13,7 @@ from string import replace
 from core.character import Character
 import core.background as background
 import core.race as race
+import core.dnd_class as dnd_class
 
 
 try:
@@ -83,6 +84,7 @@ class CharacterGenerator(object):
         self.character = None
         self.background_parser = background.BackgroundParser()
         self.race_parser = race.RaceParser()
+        self.class_parser = dnd_class.DnDClassParser()
         
         # Create main tab
         self.centralwidget = QtGui.QWidget(MainWindow)
@@ -188,9 +190,6 @@ class CharacterGenerator(object):
         self.changeSubrace(self.tab2_subrace_choice_combo.currentText())
         
     def changeSubrace(self, subrace):
-        #self.tab2_subrace_description = QtGui.QTextBrowser(self.tab2_subrace_layout)
-        #self.tab2_subrace_choice_combo = QtGui.QComboBox(self.tab2_subrace_layout)
-        #self.tab2_race_choice_combo = QtGui.QComboBox(self.tab2_race_layout)
         race = self.tab2_race_choice_combo.currentText()
         self.tab2_subrace_description.setText(
             self.race_parser.getSubraceDescription(race, subrace))
@@ -218,9 +217,6 @@ class CharacterGenerator(object):
         for choice in list_choice:
             for i in range(choice[2]):
                 j += 1
-                """
-                self.tab2_choices_layout.addWidget(self.tab2_choice_1_label, 0, 0, 1, 1)
-                """
                 label = QtGui.QLabel(choiceLabel(choice[0]), self.tab2)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
@@ -244,6 +240,79 @@ class CharacterGenerator(object):
                 self.tab2_choices_layout.addWidget(label, int(j/4), j%4)
                 self.tab2_choice_list.append(label)
 
+
+    # --------------- CLASS FUNCTIONS --------------------------------------
+
+    def changeClass(self, dnd_class):
+        """ Action that will be done when the user change the class
+        :param str dnd_class: class in the combo box
+        """
+        self.tab3_class_description.setText(self.class_parser.getDescription(dnd_class))
+        self.updateSpecialization()
+
+    def updateSpecialization(self):
+        """ Update the list of specialization
+        """
+        dnd_class = self.tab3_class_combo.currentText()
+        self.tab3_specialization_combo.clear()
+        for i in self.class_parser.getListSpecialization(dnd_class):
+            self.tab3_specialization_combo.addItem(i)
+        self.changeSpecialization(self.tab3_specialization_combo.currentText())
+        
+    def changeSpecialization(self, specialization):
+        """ Action that will be done when the user change the specialization
+        :param str specialization: specialization selected
+        """
+        dnd_class = self.tab3_class_combo.currentText()
+        self.tab3_specialization_description.setText(
+            self.class_parser.getSpecializationDescription(dnd_class, specialization))
+        self.changeClassTabChoice()
+
+    def changeClassTabChoice(self):
+        """ Update the class choice widgets
+        """
+        dnd_class = self.tab3_class_combo.currentText()
+        specialization = self.tab3_specialization_combo.currentText()
+        list_choice = self.class_parser.getChoice(dnd_class)
+        list_choice.extend(self.class_parser.getSpecializationChoice(dnd_class, specialization))
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+
+        for i in range(len(self.tab3_choice_list)):
+            if (i == 0) or (i == len(self.tab3_choice_list)-1):
+                self.tab3_choices_layout.removeItem(self.tab3_choice_list[i])
+            else:
+                self.tab3_choices_layout.removeWidget(self.tab3_choice_list[i])
+                self.tab3_choice_list[i].deleteLater()
+
+        self.tab3_choice_list = []
+
+        spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        self.tab3_choice_list.append(spacer)
+        self.tab3_choices_layout.addItem(spacer)
+        j = 0
+        for choice in list_choice:
+            for i in range(choice[2]):
+                j += 1
+                label = QtGui.QLabel(choiceLabel(choice[0]), self.tab3)
+                label.setSizePolicy(sizePolicy)
+                label.setAlignment(
+                    QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+                self.tab3_choices_layout.addWidget(label, j, 0)
+                self.tab3_choice_list.append(label)
+                combo = QtGui.QComboBox(self.tab3)
+                if choice[0] == 'language' and choice[1][0] == 'any':
+                    choice = (choice[0], getLanguages())
+                for i in choice[1]:
+                    combo.addItem(i)
+                self.tab3_choices_layout.addWidget(combo, j, 1)
+                self.tab3_choice_list.append(combo)
+
+        spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        self.tab3_choice_list.append(spacer)
+        self.tab3_choices_layout.addItem(spacer)
 
     # --------------- BACKGROUND FUNCTIONS ---------------------------------
         
@@ -1000,58 +1069,52 @@ class CharacterGenerator(object):
         self.tab3_layout.addWidget(self.tab3_specialization_description, 1, 1, 1, 1)
 
         # Choice
-        self.tab3_class_choice_layout = QtGui.QFormLayout()
-        self.tab3_class_choice_layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
-        self.tab3_class_choice_layout.setLabelAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.tab3_class_choice_layout.setFormAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+
+        self.tab3_class_choice_layout = QtGui.QVBoxLayout()
+        
+        spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.tab3_class_choice_layout.addItem(spacer)
+
         self.tab3_class_choice_layout.setObjectName(_fromUtf8("tab3_class_choice_layout"))
         self.tab3_class_label = QtGui.QLabel("Class", self.tab3)
+        self.tab3_class_label.setSizePolicy(sizePolicy)
         self.tab3_class_label.setObjectName(_fromUtf8("tab3_class_label"))
-        self.tab3_class_choice_layout.setWidget(0, QtGui.QFormLayout.LabelRole, self.tab3_class_label)
+        self.tab3_class_choice_layout.addWidget(self.tab3_class_label)
         self.tab3_class_combo = QtGui.QComboBox(self.tab3)
+        self.tab3_class_combo.setSizePolicy(sizePolicy)
+        for i in self.class_parser.getListClass():
+            self.tab3_class_combo.addItem(i)
+        self.tab3_class_combo.activated[str].connect(self.changeClass)
         self.tab3_class_combo.setObjectName(_fromUtf8("tab3_class_combo"))
-        self.tab3_class_combo.addItem("Barbarian")
-        self.tab3_class_choice_layout.setWidget(0, QtGui.QFormLayout.FieldRole, self.tab3_class_combo)
+        self.tab3_class_choice_layout.addWidget(self.tab3_class_combo)
         # specialization
-        self.tab3_specialization_combo = QtGui.QComboBox(self.tab3)
-        self.tab3_specialization_combo.setMinimumSize(QtCore.QSize(120, 0))
-        self.tab3_specialization_combo.setObjectName(_fromUtf8("tab3_specialization_combo"))
-        self.tab3_specialization_combo.addItem("Path of the Berserk")
-        self.tab3_class_choice_layout.setWidget(1, QtGui.QFormLayout.FieldRole, self.tab3_specialization_combo)
         self.tab3_specialization_label = QtGui.QLabel("Specialization", self.tab3)
+        self.tab3_specialization_label.setSizePolicy(sizePolicy)
         self.tab3_specialization_label.setObjectName(_fromUtf8("tab3_specialization_label"))
-        self.tab3_class_choice_layout.setWidget(1, QtGui.QFormLayout.LabelRole, self.tab3_specialization_label)
+        self.tab3_class_choice_layout.addWidget(self.tab3_specialization_label)
+
+        self.tab3_specialization_combo = QtGui.QComboBox(self.tab3)
+        self.tab3_specialization_combo.activated[str].connect(self.changeSpecialization)
+        self.tab3_specialization_combo.setMinimumSize(QtCore.QSize(120, 0))
+        self.tab3_specialization_combo.setSizePolicy(sizePolicy)
+        self.tab3_specialization_combo.setObjectName(_fromUtf8("tab3_specialization_combo"))
+        self.tab3_class_choice_layout.addWidget(self.tab3_specialization_combo)
         self.tab3_layout.addLayout(self.tab3_class_choice_layout, 0, 0, 1, 1)
-        self.tab3_choice_layout = QtGui.QGridLayout()
-        self.tab3_choice_layout.setObjectName(_fromUtf8("tab3_choice_layout"))
-        self.tab3_choice_2_combo = QtGui.QComboBox(self.tab3)
-        self.tab3_choice_2_combo.setObjectName(_fromUtf8("tab3_choice_2_combo"))
-        self.tab3_choice_2_combo.addItem("Insight")
-        self.tab3_choice_layout.addWidget(self.tab3_choice_2_combo, 3, 1, 1, 1)
-        self.tab3_choice_1_combo = QtGui.QComboBox(self.tab3)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tab3_choice_1_combo.sizePolicy().hasHeightForWidth())
-        self.tab3_choice_1_combo.setSizePolicy(sizePolicy)
-        self.tab3_choice_1_combo.setObjectName(_fromUtf8("tab3_choice_1_combo"))
-        self.tab3_choice_1_combo.addItem("Religion")
-        self.tab3_choice_layout.addWidget(self.tab3_choice_1_combo, 2, 1, 1, 1)
-        self.tab3_choice_1_label = QtGui.QLabel("Skill", self.tab3)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tab3_choice_1_label.sizePolicy().hasHeightForWidth())
-        self.tab3_choice_1_label.setSizePolicy(sizePolicy)
-        self.tab3_choice_1_label.setMinimumSize(QtCore.QSize(50, 0))
-        self.tab3_choice_1_label.setObjectName(_fromUtf8("tab3_choice_1_label"))
-        self.tab3_choice_layout.addWidget(self.tab3_choice_1_label, 2, 0, 1, 1)
-        self.tab3_choice_2_label = QtGui.QLabel("Skill", self.tab3)
-        self.tab3_choice_2_label.setMinimumSize(QtCore.QSize(50, 0))
-        self.tab3_choice_2_label.setObjectName(_fromUtf8("tab3_choice_2_label"))
-        self.tab3_choice_layout.addWidget(self.tab3_choice_2_label, 3, 0, 1, 1)
-        self.tab3_layout.addLayout(self.tab3_choice_layout, 1, 0, 1, 1)
+
+        spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.tab3_class_choice_layout.addItem(spacer)
+
+        self.tab3_choices_layout = QtGui.QGridLayout()
+        self.tab3_layout.addLayout(self.tab3_choices_layout, 1, 0, 1, 1)
+        self.tab3_choice_list = []
+        self.tab3_choices_layout.setObjectName(_fromUtf8("tab3_choice_layout"))
         self.horizontalLayout_9.addLayout(self.tab3_layout)
+
+        self.changeClass(self.tab3_class_combo.currentText())
         self.main_tab.addTab(self.tab3, "Class")
 
         
