@@ -104,3 +104,21 @@ class RaceParser():
                 value[1].append(key.get('name'))
             list_choice.append(value)
         return list_choice
+
+
+class Race():
+    def __init__(self):
+        self.race_name = None
+        self.subrace_name = None
+        self.choice = []
+
+    def setRace(self, name):
+        self.race_name = name
+
+    def setSubrace(self, name):
+        self.subrace_name = name
+
+    def write(self):
+        print "Race: ", self.race_name
+        print "Subrace: ", self.subrace_name
+        print "Choices: ", self.choice

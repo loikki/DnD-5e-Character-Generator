@@ -14,6 +14,7 @@ from core.character import Character
 import core.background as background
 import core.race as race
 import core.dnd_class as dnd_class
+import core.character as character
 
 
 try:
@@ -49,7 +50,6 @@ def rollAbility():
     min_ind = rolls.index(min(rolls))
     value = 0
     for i in range(len(rolls)):
-        print rolls[i]
         if i != min_ind:
             value += rolls[i]
     return value
@@ -81,7 +81,7 @@ class CharacterGenerator(object):
         MainWindow.setWindowTitle("Loikki's Character Generator")
 
         # by default, no character is loaded
-        self.character = None
+        self.character = character.Character()
         self.background_parser = background.BackgroundParser()
         self.race_parser = race.RaceParser()
         self.class_parser = dnd_class.DnDClassParser()
@@ -172,6 +172,7 @@ class CharacterGenerator(object):
         self.tab1_ability_value_5.setText(str(roll))
         roll = rollAbility()
         self.tab1_ability_value_6.setText(str(roll))
+        self.character.write()
         
     # --------------- RACE FUNCTIONS --------------------------------------
     def changeRace(self, race):
@@ -179,6 +180,7 @@ class CharacterGenerator(object):
         """
         self.tab2_race_description.setText(self.race_parser.getDescription(race))
         self.updateSubrace()
+        self.character.race.setRace(race)
 
     def updateSubrace(self):
         """ Update the list of subrace
@@ -194,6 +196,7 @@ class CharacterGenerator(object):
         self.tab2_subrace_description.setText(
             self.race_parser.getSubraceDescription(race, subrace))
         self.changeRaceTabChoice()
+        self.character.race.setSubrace(subrace)
 
     def changeRaceTabChoice(self):
         """ Update the race choice widgets
@@ -333,6 +336,7 @@ class CharacterGenerator(object):
         for ideal in self.background_parser.getListIdeal(background):
             self.tab5_ideal_combo.addItem(ideal)
         self.changeBackgroundChoice(background)
+        self.character.background.setBackgroundName(background)
 
     def changeIdealDescription(self, ideal):
         """ Update the text of the ideal
@@ -341,6 +345,7 @@ class CharacterGenerator(object):
         background = self.tab5_background_combo.currentText()
         self.tab5_ideal_description.setText(
             self.background_parser.getIdealDescription(background, ideal))
+        self.character.background.setIdeal(ideal)
 
     def changePersonalityDescription(self, personality):
         """ Update the description text of the personality
@@ -353,6 +358,8 @@ class CharacterGenerator(object):
             self.tab5_personality_description.setText(
                 "Please choose two different personalities!")
             return
+        self.character.background.setPersonality0(perso1)
+        self.character.background.setPersonality1(perso2)
         perso1 = self.background_parser.getPersonalityDescription(
             background, perso1)
         perso2 = self.background_parser.getPersonalityDescription(
@@ -410,6 +417,7 @@ class CharacterGenerator(object):
         background = self.tab5_background_combo.currentText()
         self.tab5_flaw_description.setText(
             self.background_parser.getFlawDescription(background, flaw))
+        self.character.background.setFlaw(flaw)
 
     def changeBondDescription(self, bond):
         """ Update the description of the bond
@@ -418,7 +426,8 @@ class CharacterGenerator(object):
         background = self.tab5_background_combo.currentText()
         self.tab5_bond_description.setText(
             self.background_parser.getBondDescription(background, bond))
-
+        self.character.background.setBond(bond)
+        
     def fullRandomBackground(self):
         """ Choose randomly the background, personality, ideal, bond
         and flaw of the character
@@ -456,6 +465,8 @@ class CharacterGenerator(object):
         self.changeIdealDescription(ideal)
         # alignment
         self.tab5_alignment_combo.setCurrentIndex(rollDice(1,9)-1)
+        self.character.background.setAlignment(
+            self.tab5_alignment_combo.currentText())
         
     # --------------------------- GUI ---------------------------------
         
@@ -1470,6 +1481,7 @@ class CharacterGenerator(object):
         self.tab5_alignment_combo.addItem("Lawful Evil")
         self.tab5_alignment_combo.addItem("Neutral Evil")
         self.tab5_alignment_combo.addItem("Chaotic Evil")
+        self.tab5_alignment_combo.activated[str].connect(self.character.background.setAlignment)
         self.tab5_ideal_choice_layout.addWidget(self.tab5_alignment_combo)
         self.horizontalLayout_13.addLayout(self.tab5_ideal_choice_layout)
         self.tab5_ideal_description = QtGui.QTextBrowser(self.tab5_ideal_layout)

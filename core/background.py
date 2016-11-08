@@ -92,13 +92,45 @@ class BackgroundParser():
             list_choice.append(value)
         return list_choice
 
+
 class Background():
     def __init__(self):
-        self.skill = None
-        self.language_choosen = None
-        self.equipment = []
-        self.money = None
-        self.personality = []
-        self.ideal = []
-        self.bond = []
-        self.flaw = []
+        self.background_name = None
+        self.flaw = None
+        # list containing the index of the choice
+        self.choice = []
+        # two values
+        self.personality = [None, None]
+        self.ideal = None
+        self.bond = None
+        self.alignment = None
+
+    def setBackgroundName(self, name):
+        self.background_name = name
+
+    def setFlaw(self, flaw):
+        self.flaw = flaw
+
+    def setIdeal(self, ideal):
+        self.ideal = ideal
+
+    def setPersonality1(self, pers):
+        self.personality[1] = pers
+
+    def setPersonality0(self, pers):
+        self.personality[0] = pers
+
+    def setBond(self, bond):
+        self.bond = bond
+
+    def setAlignment(self, alignment):
+        self.alignment = alignment
+        
+    def write(self):
+        print "Background: ", self.background_name
+        print "Flaw: ", self.flaw
+        print "Personality: ", self.personality
+        print "Ideal: ", self.ideal
+        print "Bond: ", self.bond
+        print "Alignment: ", self.alignment
+        print "Choice: ", self.choice

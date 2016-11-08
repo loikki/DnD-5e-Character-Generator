@@ -1,4 +1,6 @@
 import char_enum
+from core.background import Background
+from core.race import Race
 
 XP_LIMITS = [300, 900, 2700, 6500, 14000, 23000, 34000, 48000,
              64000, 85000, 100000, 120000, 140000, 165000, 195000,
@@ -33,10 +35,10 @@ class Character:
         self.lvl = 1
 
         # Origin
-        self.race = None
+        self.race = Race()
         self.subrace = None
         self.specialization = None
-        self.background = None
+        self.background = Background()
         self.equipment = None
 
         self.alignment = None
@@ -44,5 +46,9 @@ class Character:
     def levelUp(self):
         self.specialization.LevelUp()
 
-    def setRace(self, race_name):
-        self.race = race(race_name)
+    def write(self):
+        print " RACE\n"
+        self.race.write()
+
+        print "\n BACKGROUND\n"
+        self.background.write()
