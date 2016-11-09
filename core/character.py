@@ -1,4 +1,4 @@
-import char_enum
+from char_enum import Ability
 from core.background import Background
 from core.race import Race
 
@@ -36,19 +36,129 @@ class Character:
 
         # Origin
         self.race = Race()
-        self.subrace = None
         self.specialization = None
         self.background = Background()
         self.equipment = None
 
-        self.alignment = None
+        # description
+        self.name = None
+        self.player = None
+        self.campaign = None
+        self.gender = None
+        self.age = None
+        self.height = None
+        self.weight = None
+        self.hair = None
+        self.eyes = None
+        self.experience = 0
+        self.notable_features = None
+        self.image = None
 
-    def levelUp(self):
-        self.specialization.LevelUp()
+    # Strength
+        
+    def getStrength(self):
+        return self.ability[Ability.strength]
 
+    def setStrength(self, strength):
+        self.ability[Ability.strength] = int(strength)
+
+    # Dexterity
+
+    def getDexterity(self):
+        return self.ability[Ability.dexterity]
+
+    def setDexterity(self, dex):
+        self.ability[Ability.dexterity] = int(dex)
+
+    # Constitution
+
+    def getConstitution(self):
+        return self.ability[Ability.constitution]
+
+    def setConstitution(self, con):
+        self.ability[Ability.constitution] = int(con)
+
+    # Intelligence
+        
+    def getIntelligence(self):
+        return self.ability[Ability.intelligence]
+
+    def setIntelligence(self, intelligence):
+        self.ability[Ability.intelligence] = int(intelligence)
+
+    # Wisdom
+    
+    def getWisdom(self):
+        return self.ability[Ability.wisdom]
+
+    def setWisdom(self, wis):
+        self.ability[Ability.wisdom] = int(wis)
+
+    # Charisma
+
+    def getCharisma(self):
+        return self.ability[Ability.charisma]
+
+    def setCharisma(self, cha):
+        self.ability[Ability.charisma] = int(cha)
+    
+    def setName(self, name):
+        self.name = name
+
+    def setPlayer(self, player):
+        self.player = player
+
+    def setCampaign(self, campaign):
+        self.campaign = campaign
+
+    def setGender(self, gender):
+        self.gender = gender
+
+    def setAge(self, age):
+        self.age = int(age)
+
+    def setHeight(self, height):
+        self.height = height
+
+    def setWeight(self, weight):
+        self.weight = weight
+
+    def setHair(self, hair):
+        self.hair = hair
+
+    def setEyes(self, eyes):
+        self.eyes = eyes
+
+    def setExperience(self, xp):
+        self.experience = xp
+
+    def setImage(self, image):
+        self.image = image
+        
     def write(self):
-        print " RACE\n"
-        self.race.write()
+        print " Character\n"
+        print "Name: ", self.name
+        print "Player: ", self.player
+        print "Campaign: ", self.campaign
+        print "Gender: ", self.gender
+        print "Age: ", self.age
+        print "Height: ", self.height
+        print "Weight: ", self.weight
+        print "Hair: ", self.hair
+        print "Eyes: ", self.eyes
+        print "XP: ", self.experience
+        print "Notable Features: ", self.notable_features
+        print "Image: ", self.image
+
+        name = ["Strength: ", "Dexterity: ", "Constitution: ",
+                "Intelligence: ", "Wisdom: ", "Charisma: "]
+        for i in range(len(name)):
+            print name[i], self.ability[i]
+
+        print "\n RACE\n"
+        if self.race is not None:
+            self.race.write()
 
         print "\n BACKGROUND\n"
-        self.background.write()
+        if self.background is not None:
+            self.background.write()

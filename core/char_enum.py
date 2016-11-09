@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import IntEnum
 
-class Ability(Enum):
+class Ability(IntEnum):
     strength = 0
     dexterity = 1
     constitution = 2
