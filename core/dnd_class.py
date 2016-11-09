@@ -104,3 +104,13 @@ class DnDClassParser:
                 value[1].append(key.get('name'))
             list_choice.append(value)
         return list_choice
+
+
+class DnDClass:
+    def __init__(self):
+        self.class_name = None
+        self.specialization_name = None
+
+    def write(self):
+        print "Class: ", self.class_name
+        print "Specialization: ", self.specialization_name

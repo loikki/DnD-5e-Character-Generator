@@ -9,6 +9,8 @@
 from PyQt4 import QtCore, QtGui
 import random
 from string import replace
+import pickle
+import os
 
 from core.character import Character
 import core.background as background
@@ -131,7 +133,8 @@ class CharacterGenerator(object):
     
     # tool bar
     def saveCharacter(self):
-        print "Character saved"
+        pickle.dump(self.character, open(
+            "data/saved/player/" + self.character.name + ".p", 'wb'))
 
     def printCharacter(self):
         print "Not implemented yet"
@@ -139,21 +142,59 @@ class CharacterGenerator(object):
     # character choice tab
     def newCharacter(self):
         self.character = Character()
-
-    def selectCharacter(self):
-        print "Not implemented yet"
-        self.character = None
         
     def loadCharacter(self):
-        print "Not implemented yet"
-        return None
-
+        character = self.tab0_character_choice.currentItem().text()
+        for c in self.list_character:
+            if character == c.name:
+                character = c
+                break
+        self.character = character
+        print "Need to update all the windows"
+        
     # description tab
     def importImage(self):
-        print "Not implemented yet"
+        openfile = QtGui.QFileDialog.getOpenFileName(self.centralwidget) # Filename line
+        self.tab1_img.setPixmap(QtGui.QPixmap(openfile))
+        f = open(openfile, 'r') # New line
+        self.character.image = f.read() # New line
 
     def removeImage(self):
-        print "Not implemented yet"
+        self.character.image = None
+        self.tab1_img.clear()
+
+    # --------------- Character Choice ------------------------------------
+
+    def loadListCharacters(self):
+        self.list_character = []
+        character_directory = "data/saved/player/"
+        for character_file in os.listdir(character_directory):
+            self.list_character.append(pickle.load(
+                open(character_directory + character_file, 'rb')))
+        for character in self.list_character:
+            self.tab0_character_choice.addItem(character.name)
+
+    def printSummary(self):
+        character = self.tab0_character_choice.currentItem().text()
+        for c in self.list_character:
+            if character == c.name:
+                character = c
+                break
+
+        self.tab0_raceLineEdit.setText(character.race.subrace_name)
+        self.tab0_classLineEdit.setText(character.dnd_class.class_name)
+        self.tab0_specializationLineEdit.setText(
+            character.dnd_class.specialization_name)
+        self.tab0_backgroundLineEdit.setText(
+            character.background.background_name)
+        self.tab0_experienceLevelLineEdit.setText(
+            str(character.experience))
+        self.tab0_str_value.setText(str(character.getStrength()))
+        self.tab0_dex_value.setText(str(character.getDexterity()))
+        self.tab0_con_value.setText(str(character.getConstitution()))
+        self.tab0_int_value.setText(str(character.getIntelligence()))
+        self.tab0_wis_value.setText(str(character.getWisdom()))
+        self.tab0_cha_value.setText(str(character.getCharisma()))
 
     # --------------- DESCRIPTION FUNCTIONS -------------------------------
         
@@ -183,13 +224,25 @@ class CharacterGenerator(object):
                         self.tab1_int_combo, self.tab1_wis_combo, self.tab1_cha_combo]
         for combo in list_ability:
             combo.clear()
+        self.changeAttributionAbility(None)
+
+    def changeAttributionAbility(self, not_used):
+        list_ability = [self.tab1_str_combo, self.tab1_dex_combo, self.tab1_con_combo,
+                        self.tab1_int_combo, self.tab1_wis_combo, self.tab1_cha_combo]
+        list_value = [self.tab1_ability_value_1.text(), self.tab1_ability_value_2.text(),
+                      self.tab1_ability_value_3.text(), self.tab1_ability_value_4.text(),
+                      self.tab1_ability_value_5.text(), self.tab1_ability_value_6.text()]
+        for combo in list_ability:
+            if combo.currentText() != '':
+                list_value.remove(combo.currentText())
+        for combo in list_ability:
+            temp = combo.currentText()
+            combo.clear()
+            if temp != '':
+                combo.addItem(temp)
             combo.addItem("")
-            combo.addItem(self.tab1_ability_value_1.text())
-            combo.addItem(self.tab1_ability_value_2.text())
-            combo.addItem(self.tab1_ability_value_3.text())
-            combo.addItem(self.tab1_ability_value_4.text())
-            combo.addItem(self.tab1_ability_value_5.text())
-            combo.addItem(self.tab1_ability_value_6.text())
+            for i in range(len(list_value)):
+                combo.addItem(list_value[i])
         
     # --------------- RACE FUNCTIONS --------------------------------------
     def changeRace(self, race):
@@ -269,6 +322,7 @@ class CharacterGenerator(object):
         """
         self.tab3_class_description.setText(self.class_parser.getDescription(dnd_class))
         self.updateSpecialization()
+        self.character.dnd_class.class_name = dnd_class
 
     def updateSpecialization(self):
         """ Update the list of specialization
@@ -287,6 +341,7 @@ class CharacterGenerator(object):
         self.tab3_specialization_description.setText(
             self.class_parser.getSpecializationDescription(dnd_class, specialization))
         self.changeClassTabChoice()
+        self.character.dnd_class.specialization_name = specialization
 
     def changeClassTabChoice(self):
         """ Update the class choice widgets
@@ -498,6 +553,7 @@ class CharacterGenerator(object):
         self.tab0_character_choice_layout = QtGui.QVBoxLayout()
         self.tab0_character_choice_layout.setObjectName(_fromUtf8("tab0_character_choice_layout"))
         self.tab0_character_choice = QtGui.QListWidget(self.tab0)
+        self.tab0_character_choice.currentRowChanged.connect(self.printSummary)
         self.tab0_character_choice.setSortingEnabled(False)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -507,7 +563,7 @@ class CharacterGenerator(object):
         self.tab0_character_choice.setObjectName(_fromUtf8("tab0_character_choice"))
         # create and add an item into the list
         item = QtGui.QListWidgetItem()
-        item.setText(_translate("MainWindow", "barab", None))
+        self.loadListCharacters()
         self.tab0_character_choice.addItem(item)
         # add the list
         self.tab0_character_choice_layout.addWidget(self.tab0_character_choice)
@@ -521,7 +577,7 @@ class CharacterGenerator(object):
         self.tab0_button_layout.addWidget(self.tab0_new_character)
         self.tab0_choose_current = QtGui.QPushButton("Choose Current Character", self.tab0)
         self.tab0_choose_current.setObjectName(_fromUtf8("tab0_choose_current"))
-        self.tab0_choose_current.clicked.connect(self.selectCharacter)
+        self.tab0_choose_current.clicked.connect(self.loadCharacter)
         self.tab0_button_layout.addWidget(self.tab0_choose_current)
         self.tab0_character_choice_layout.addLayout(self.tab0_button_layout)
 
@@ -635,10 +691,10 @@ class CharacterGenerator(object):
         self.tab0_int_value.setAlignment(QtCore.Qt.AlignCenter)
         self.tab0_int_value.setObjectName(_fromUtf8("tab0_int_value"))
         self.tab0_ability_layout.addWidget(self.tab0_int_value, 1, 3, 1, 1)
-        self.tba0_wis_value = QtGui.QLabel("8", self.tab0_summary_layout)
-        self.tba0_wis_value.setAlignment(QtCore.Qt.AlignCenter)
-        self.tba0_wis_value.setObjectName(_fromUtf8("tba0_wis_value"))
-        self.tab0_ability_layout.addWidget(self.tba0_wis_value, 1, 4, 1, 1)
+        self.tab0_wis_value = QtGui.QLabel("8", self.tab0_summary_layout)
+        self.tab0_wis_value.setAlignment(QtCore.Qt.AlignCenter)
+        self.tab0_wis_value.setObjectName(_fromUtf8("tab0_wis_value"))
+        self.tab0_ability_layout.addWidget(self.tab0_wis_value, 1, 4, 1, 1)
         self.tab0_cha_value = QtGui.QLabel("11", self.tab0_summary_layout)
         self.tab0_cha_value.setAlignment(QtCore.Qt.AlignCenter)
         self.tab0_cha_value.setObjectName(_fromUtf8("tab0_cha_value"))
@@ -864,6 +920,7 @@ class CharacterGenerator(object):
         sizePolicy.setHeightForWidth(self.tab1_img.sizePolicy().hasHeightForWidth())
         self.tab1_img.setSizePolicy(sizePolicy)
         self.tab1_img.setMaximumSize(QtCore.QSize(400, 400))
+        self.tab1_img.setMinimumHeight(400)
         self.tab1_img.setText(_fromUtf8(""))
         self.tab1_img.setPixmap(QtGui.QPixmap("/home/loikki/Downloads/test.jpeg"))
         self.tab1_img.setScaledContents(True)
@@ -952,25 +1009,31 @@ class CharacterGenerator(object):
         self.tab1_cha_combo = QtGui.QComboBox(self.tab1_abilities_layout)
         self.tab1_cha_combo.setObjectName(_fromUtf8("tab1_cha_combo"))
         self.tab1_cha_combo.activated[str].connect(self.character.setCharisma)
+        self.tab1_cha_combo.activated.connect(self.changeAttributionAbility)
         self.tab1_abilities_choice_layout.addWidget(self.tab1_cha_combo, 1, 5, 1, 1)
         self.tab1_wis_combo = QtGui.QComboBox(self.tab1_abilities_layout)
         self.tab1_wis_combo.activated[str].connect(self.character.setWisdom)
+        self.tab1_wis_combo.activated.connect(self.changeAttributionAbility)
         self.tab1_wis_combo.setObjectName(_fromUtf8("tab1_wis_combo"))
         self.tab1_abilities_choice_layout.addWidget(self.tab1_wis_combo, 1, 4, 1, 1)
         self.tab1_int_combo = QtGui.QComboBox(self.tab1_abilities_layout)
         self.tab1_int_combo.activated[str].connect(self.character.setIntelligence)
+        self.tab1_int_combo.activated.connect(self.changeAttributionAbility)
         self.tab1_int_combo.setObjectName(_fromUtf8("tab1_int_combo"))
         self.tab1_abilities_choice_layout.addWidget(self.tab1_int_combo, 1, 3, 1, 1)
         self.tab1_con_combo = QtGui.QComboBox(self.tab1_abilities_layout)
         self.tab1_con_combo.activated[str].connect(self.character.setConstitution)
+        self.tab1_con_combo.activated.connect(self.changeAttributionAbility)
         self.tab1_con_combo.setObjectName(_fromUtf8("tab1_con_combo"))
         self.tab1_abilities_choice_layout.addWidget(self.tab1_con_combo, 1, 2, 1, 1)
         self.tab1_dex_combo = QtGui.QComboBox(self.tab1_abilities_layout)
         self.tab1_dex_combo.activated[str].connect(self.character.setDexterity)
+        self.tab1_dex_combo.activated.connect(self.changeAttributionAbility)
         self.tab1_dex_combo.setObjectName(_fromUtf8("tab1_dex_combo"))
         self.tab1_abilities_choice_layout.addWidget(self.tab1_dex_combo, 1, 1, 1, 1)
         self.tab1_str_combo = QtGui.QComboBox(self.tab1_abilities_layout)
         self.tab1_str_combo.activated[str].connect(self.character.setStrength)
+        self.tab1_str_combo.activated.connect(self.changeAttributionAbility)
         self.tab1_str_combo.setObjectName(_fromUtf8("tab1_str_combo"))
         self.tab1_abilities_choice_layout.addWidget(self.tab1_str_combo, 1, 0, 1, 1)
         # labels

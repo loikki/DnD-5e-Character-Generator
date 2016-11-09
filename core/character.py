@@ -1,5 +1,6 @@
 from char_enum import Ability
 from core.background import Background
+from core.dnd_class import DnDClass
 from core.race import Race
 
 XP_LIMITS = [300, 900, 2700, 6500, 14000, 23000, 34000, 48000,
@@ -36,7 +37,7 @@ class Character:
 
         # Origin
         self.race = Race()
-        self.specialization = None
+        self.dnd_class = DnDClass()
         self.background = Background()
         self.equipment = None
 
@@ -60,7 +61,10 @@ class Character:
         return self.ability[Ability.strength]
 
     def setStrength(self, strength):
-        self.ability[Ability.strength] = int(strength)
+        if strength == '':
+            self.ability[Ability.strength] = None
+        else:
+            self.ability[Ability.strength] = int(strength)
 
     # Dexterity
 
@@ -68,7 +72,10 @@ class Character:
         return self.ability[Ability.dexterity]
 
     def setDexterity(self, dex):
-        self.ability[Ability.dexterity] = int(dex)
+        if dex == '':
+            self.ability[Ability.dexterity] = None
+        else:
+            self.ability[Ability.dexterity] = int(dex)
 
     # Constitution
 
@@ -76,7 +83,10 @@ class Character:
         return self.ability[Ability.constitution]
 
     def setConstitution(self, con):
-        self.ability[Ability.constitution] = int(con)
+        if con == '':
+            self.ability[Ability.constitution] = None
+        else:
+            self.ability[Ability.constitution] = int(con)
 
     # Intelligence
         
@@ -84,7 +94,10 @@ class Character:
         return self.ability[Ability.intelligence]
 
     def setIntelligence(self, intelligence):
-        self.ability[Ability.intelligence] = int(intelligence)
+        if intelligence == '':
+            self.ability[Ability.intelligence] = None
+        else:
+            self.ability[Ability.intelligence] = int(intelligence)
 
     # Wisdom
     
@@ -92,7 +105,10 @@ class Character:
         return self.ability[Ability.wisdom]
 
     def setWisdom(self, wis):
-        self.ability[Ability.wisdom] = int(wis)
+        if wis == '':
+            self.ability[Ability.wisdom] = None
+        else:
+            self.ability[Ability.wisdom] = int(wis)
 
     # Charisma
 
@@ -100,8 +116,11 @@ class Character:
         return self.ability[Ability.charisma]
 
     def setCharisma(self, cha):
-        self.ability[Ability.charisma] = int(cha)
-    
+        if cha == '':
+            self.ability[Ability.charisma] = None
+        else:
+            self.ability[Ability.charisma] = int(cha)
+            
     def setName(self, name):
         self.name = name
 
@@ -159,6 +178,10 @@ class Character:
         if self.race is not None:
             self.race.write()
 
+        print "\n CLASS\n"
+        if self.dnd_class is not None:
+            self.dnd_class.write()
+            
         print "\n BACKGROUND\n"
         if self.background is not None:
             self.background.write()
