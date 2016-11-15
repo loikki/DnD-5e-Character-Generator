@@ -9,6 +9,7 @@
 from PyQt4 import QtCore, QtGui
 import random
 from string import replace
+import math
 import pickle
 import os
 
@@ -134,14 +135,21 @@ class CharacterGenerator(object):
     # tool bar
     def saveCharacter(self):
         pickle.dump(self.character, open(
-            "data/saved/player/" + self.character.name + ".p", 'wb'))
+            os.path.join("data", "saved", "player", + self.character.name + ".p"), 'wb'))
 
     def printCharacter(self):
         print "Not implemented yet"
 
+    def initializeCharacter(self, new):
+        """ 
+        :param bool new: Is a new character?
+        """
+        return
+    
     # character choice tab
     def newCharacter(self):
         self.character = Character()
+        self.initializeCharacter(True)
         
     def loadCharacter(self):
         character = self.tab0_character_choice.currentItem().text()
@@ -150,7 +158,7 @@ class CharacterGenerator(object):
                 character = c
                 break
         self.character = character
-        print "Need to update all the windows"
+        self.initializeCharacter(True)
         
     # description tab
     def importImage(self):
@@ -167,7 +175,7 @@ class CharacterGenerator(object):
 
     def loadListCharacters(self):
         self.list_character = []
-        character_directory = "data/saved/player/"
+        character_directory = os.path.join("data", "saved", "player", "")
         for character_file in os.listdir(character_directory):
             self.list_character.append(pickle.load(
                 open(character_directory + character_file, 'rb')))
@@ -195,12 +203,16 @@ class CharacterGenerator(object):
         self.tab0_int_value.setText(str(character.getIntelligence()))
         self.tab0_wis_value.setText(str(character.getWisdom()))
         self.tab0_cha_value.setText(str(character.getCharisma()))
+        self.character.background.getProficiency(None)
 
+        
     # --------------- DESCRIPTION FUNCTIONS -------------------------------
         
     def rollAbilities(self):
         """ Roll 6 times 4d6 and remove the lowest one
         """
+        if self.tab1_ability_style_combo.currentText() != 'Random':
+            return
         roll = rollAbility()
         self.tab1_ability_value_1.setText(str(roll))
         roll = rollAbility()
@@ -213,13 +225,79 @@ class CharacterGenerator(object):
         self.tab1_ability_value_5.setText(str(roll))
         roll = rollAbility()
         self.tab1_ability_value_6.setText(str(roll))
+        self.character.dnd_class.getProficiency(None)
         self.character.write()
+
+    def changeRollStyle(self, style):
+        self.tab1_ability_value_1.clear()
+        self.tab1_ability_value_2.clear()
+        self.tab1_ability_value_3.clear()
+        self.tab1_ability_value_4.clear()
+        self.tab1_ability_value_5.clear()
+        self.tab1_ability_value_6.clear()
+        self.tab1_ability_point_score.clear()
+        if style == 'Free' or style == 'Points':
+            self.tab1_ability_value_1.setReadOnly(False)
+            self.tab1_ability_value_2.setReadOnly(False)
+            self.tab1_ability_value_3.setReadOnly(False)
+            self.tab1_ability_value_4.setReadOnly(False)
+            self.tab1_ability_value_5.setReadOnly(False)
+            self.tab1_ability_value_6.setReadOnly(False)
+        else:
+            self.tab1_ability_value_1.setReadOnly(True)
+            self.tab1_ability_value_2.setReadOnly(True)
+            self.tab1_ability_value_3.setReadOnly(True)
+            self.tab1_ability_value_4.setReadOnly(True)
+            self.tab1_ability_value_5.setReadOnly(True)
+            self.tab1_ability_value_6.setReadOnly(True)
+        if  style == 'Pregenerated':
+            self.tab1_ability_value_1.setText("15")
+            self.tab1_ability_value_2.setText("14")
+            self.tab1_ability_value_3.setText("13")
+            self.tab1_ability_value_4.setText("12")
+            self.tab1_ability_value_5.setText("10")
+            self.tab1_ability_value_6.setText("8")
+        elif style == 'Points':
+            self.tab1_ability_value_1.setText("8")
+            self.tab1_ability_value_2.setText("8")
+            self.tab1_ability_value_3.setText("8")
+            self.tab1_ability_value_4.setText("8")
+            self.tab1_ability_value_5.setText("8")
+            self.tab1_ability_value_6.setText("8")
+        
 
     def notableFeaturesChanged(self):
         features = self.tab1_features.toPlainText()
         self.character.notable_features = features
 
     def changeAbilityRoll(self):
+        self.tab1_ability_point_score.clear()
+        if self.tab1_ability_style_combo.currentText() == 'Points':
+            points = 0
+            list_ability_value = [self.tab1_ability_value_1, self.tab1_ability_value_2,
+                                  self.tab1_ability_value_3, self.tab1_ability_value_4,
+                                  self.tab1_ability_value_5, self.tab1_ability_value_6]
+            for value in list_ability_value:
+                if value.text() == '':
+                    return
+                temp = int(value.text())
+                if temp < 8 or temp > 15:
+                    points = float('nan')
+                elif temp == 9:
+                    points += 1
+                elif temp == 10:
+                    points += 2
+                elif temp == 11:
+                    points += 3
+                elif temp == 12:
+                    points += 4
+                elif temp == 13:
+                    points += 5
+                elif temp == 14:
+                    points += 7
+                elif temp == 15:
+                    points += 9
+            self.tab1_ability_point_score.setText(str(points) + "/27 Points Used")
         list_ability = [self.tab1_str_combo, self.tab1_dex_combo, self.tab1_con_combo,
                         self.tab1_int_combo, self.tab1_wis_combo, self.tab1_cha_combo]
         for combo in list_ability:
@@ -410,6 +488,7 @@ class CharacterGenerator(object):
         self.changeBackgroundChoice(background)
         self.character.background.setBackgroundName(background)
 
+        
     def changeIdealDescription(self, ideal):
         """ Update the text of the ideal
         :param str ideal: New Ideal
@@ -475,12 +554,22 @@ class CharacterGenerator(object):
                     choice = (choice[0], getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
+                combo.activated[str].connect(self.makeBackgroundChoice)
                 self.horizontalLayout_33.addWidget(combo)
                 self.tab5_choice_list.append(combo)
                 spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
                 self.tab5_choice_list.append(spacer)
                 self.horizontalLayout_33.addItem(spacer)
-        
+
+    def makeBackgroundChoice(self, useless):
+        """ Update the list of choice in the character's background
+        """
+        choice = []
+        for i in range(len(self.tab5_choice_list)):
+            if i%3 == 2:
+                choice.append(self.tab5_choice_list[i].currentText())
+                
+        self.character.background.choice = choice
         
     def changeFlawDescription(self, flaw):
         """ Update the description of the flaw
@@ -958,6 +1047,7 @@ class CharacterGenerator(object):
         self.tab1_ability_style_layout = QtGui.QHBoxLayout()
         self.tab1_ability_style_layout.setObjectName(_fromUtf8("tab1_ability_style_layout"))
         self.tab1_ability_style_combo = QtGui.QComboBox(self.tab1_abilities_layout)
+        self.tab1_ability_style_combo.activated[str].connect(self.changeRollStyle)
         self.tab1_ability_style_combo.setMinimumSize(QtCore.QSize(120, 0))
         self.tab1_ability_style_combo.setObjectName(_fromUtf8("tab1_ability_style_combo"))
         self.tab1_ability_style_combo.addItem("Random")
@@ -969,6 +1059,8 @@ class CharacterGenerator(object):
         self.tab1_roll_button.setObjectName(_fromUtf8("tab1_roll_button"))
         self.tab1_roll_button.clicked.connect(self.rollAbilities)
         self.tab1_ability_style_layout.addWidget(self.tab1_roll_button)
+        self.tab1_ability_point_score = QtGui.QLabel("", self.tab1_abilities_layout)
+        self.tab1_ability_style_layout.addWidget(self.tab1_ability_point_score)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.tab1_ability_style_layout.addItem(spacerItem2)
         self.verticalLayout_19.addLayout(self.tab1_ability_style_layout)

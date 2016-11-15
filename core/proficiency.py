@@ -1,6 +1,56 @@
 from enum import Enum
+from string import lower, replace
 
-class Proficiency(Enum):
+def toProficiencyName(string):
+    string = lower(string)
+    return replace(string, ' ', '_')
+
+def getLocalProficiency(parser, proficiency):
+    """
+    :param ElementTreeObject parser: Parser
+    :param Proficiency proficiency: object where to add proficiencies
+    :returns: Completed ObjectProficiency
+    """
+    for i in parser.findall("skill"):
+        name = toProficiencyName(i.get('name'))
+        proficiency.addSkillProficiency(name)
+    for i in parser.findall("weapon"):
+        name = toProficiencyName(i.get('name'))
+        proficiency.addWeaponProficiency(name)
+    for i in parser.findall("armor"):
+        name = toProficiencyName(i.get('name'))
+        proficiency.addArmorProficiency(name)
+    for i in parser.findall("tool"):
+        name = toProficiencyName(i.get('name'))
+        proficiency.addToolProficiency(name)
+    for i in parser.findall("language"):
+        name = toProficiencyName(i.get('name'))
+        proficiency.addLanguageProficiency(name)
+
+    return proficiency
+
+def getChoiceProficiency(proficiency, value, choice):
+    """
+    :param Proficiency proficiency: object where to add proficiencies
+    :param tuple value: (tag, choice, number of choice)
+    :param [str] choice: list of choosen values (size given by number of choice)
+    """
+    if value[2] != len(choice):
+        raise Exception("Number of choice not respected")
+    for i in choice:
+        if value[0] == 'language':
+            proficiency.addLanguageProficiency(lower(str(i)))
+        elif value[0] == 'skill':
+            proficiency.addSkillProficiency(lower(str(i)))
+        elif value[0] == 'weapon':
+            proficiency.addWeaponProficiency(lower(str(i)))
+        elif value[0] == 'armor':
+            proficiency.addArmorProficiency(lower(str(i)))
+        elif value[0] == 'tool':
+            proficiency.addToolProficiency(lower(str(i)))
+    return proficiency
+
+class SkillProficiency(Enum):
     acrobatics = 0
     animal_handling = 1
     arcana = 2
@@ -118,25 +168,76 @@ class ToolProficiency(Enum):
     thieves = 36
     # Vehicles
     land_vehicles = 37
-    water_vehicles = 38    
+    water_vehicles = 38
 
-class ObjectProficiency():
+class LanguageProficiency(Enum):
+    common = 0
+    dwarvish = 1
+    elvish = 2
+    giant = 3
+    gnomish = 4
+    goblin = 5
+    halfing = 6
+    orc = 7
+    abyssal = 8
+    celestial = 9
+    draconic = 10
+    deep_speech = 11
+    infernal = 12
+    primordial = 13
+    sylvan = 14
+    undercommon = 15
+
+class Proficiency():
     def __init__(self):
+        self.skills = [False]*18
         self.weapons = [False]*38
         self.tools = [False]*3
         self.armors = [False]*39
+        self.languages = [False]*16
 
+    def addLanguageProficiency(self, prof):
+        prof = LanguageProficiency[prof]
+        self.languages[prof.value] = True
+    
+    def addSkillProficiency(self, prof):
+        prof = SkillProficiency[prof]
+        self.skills[prof.value] = True
+        
     def addWeaponProficiency(self, prof):
-        for i in prof_list:
-            if prof == "simple":
-                self.proficiency[0:15] = True
-            elif prof == "martial":
-                self.proficiency[15:0] = True
-            else:
-                self.proficiency[prof] = True
+        if prof == "simple":
+            self.weapons[0:15] = True
+        elif prof == "martial":
+            self.weapons[15:0] = True
+        else:
+            prof = WeaponProficiency[prof]
+            self.weapons[prof.value] = True
 
     def addArmorProficiency(self, prof):
-        self.proficiency[prof] = True
+        prof = ArmorProficiency[prof]
+        self.armors[prof.value] = True
 
     def addToolProficiency(self, prof):
-        self.proficiency[prof] = True
+        prof = ToolProficiency[prof]
+        self.tools[prof.value] = True
+
+    def write(self):
+        for i in range(len(self.skills)):
+            if self.skills[i]:
+                print SkillProficiency(i).name.title()
+
+        for i in range(len(self.weapons)):
+            if self.weapons[i]:
+                print WeaponProficiency(i).name.title()
+                
+        for i in range(len(self.armors)):
+            if self.armors[i]:
+                print ArmorProficiency(i).name.title()
+
+        for i in range(len(self.tools)):
+            if self.tools[i]:
+                print ToolProficiency(i).name.title()
+
+        for i in range(len(self.languages)):
+            if self.languages[i]:
+                print LanguageProficiency(i).name.title()

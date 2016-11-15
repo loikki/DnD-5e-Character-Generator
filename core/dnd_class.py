@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import core.proficiency as pfy
 
 class DnDClassParser:
     def __init__(self):
@@ -110,7 +111,33 @@ class DnDClass:
     def __init__(self):
         self.class_name = None
         self.specialization_name = None
+        self.choice = []
 
     def write(self):
         print "Class: ", self.class_name
         print "Specialization: ", self.specialization_name
+        print "Proficiency: "
+        self.getProficiency(None).write()
+
+
+    def getProficiency(self, parser):
+        """
+        :param DnDClassParser parser: If none, create one
+        """
+        proficiency = pfy.Proficiency()
+        if parser is None:
+            parser = DnDClassParser()
+
+        dndclass = parser.getClass(self.class_name)
+        prof = dndclass.find('proficiency')
+        proficiency = pfy.getLocalProficiency(prof, proficiency)
+
+        if len(self.choice) > 0:
+            choice = parser.getChoice(self.class_name)
+            i = 0
+            for value in choice:
+                proficiency = pfy.getChoiceProficiency(
+                    proficiency, value, self.choice[i:i+value[2]])
+                i += value[2]
+
+        return proficiency

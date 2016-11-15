@@ -1,4 +1,7 @@
 import xml.etree.ElementTree as ET
+from string import lower
+
+import core.proficiency as pfy
 
 class BackgroundParser():
     def __init__(self):
@@ -83,6 +86,8 @@ class BackgroundParser():
         return value
 
     def getChoice(self, background):
+        """ returns [(type, choice, number of choice)]
+        """
         child = self.getBackground(background)
         list_choice = []
         for choice in child.find('choice'):
@@ -91,7 +96,7 @@ class BackgroundParser():
                 value[1].append(key.get('name'))
             list_choice.append(value)
         return list_choice
-
+        
 
 class Background():
     def __init__(self):
@@ -134,3 +139,28 @@ class Background():
         print "Bond: ", self.bond
         print "Alignment: ", self.alignment
         print "Choice: ", self.choice
+
+        print "Proficiency: "
+        self.getProficiency(None).write()
+
+    def getProficiency(self, parser):
+        """
+        :param BackgroundParser parser: If none, create one
+        """
+        proficiency = pfy.Proficiency()
+        if parser is None:
+            parser = BackgroundParser()
+
+        background = parser.getBackground(self.background_name)
+        prof = background.find('proficiency')
+        proficiency = pfy.getLocalProficiency(prof, proficiency)
+
+        if len(self.choice) > 0:
+            choice = parser.getChoice(self.background_name)
+            i = 0
+            for value in choice:
+                proficiency = pfy.getChoiceProficiency(
+                    proficiency, value, self.choice[i:i+value[2]])
+                i += value[2]
+
+        return proficiency
