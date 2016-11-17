@@ -1,11 +1,12 @@
 import xml.etree.ElementTree as ET
 from string import lower
+from os.path import join
 
 import core.proficiency as pfy
 
 class BackgroundParser():
     def __init__(self):
-        self.background_file = 'data/dnd/background.xml'
+        self.background_file = join('data', 'dnd', 'background.xml')
         self.root = ET.parse(self.background_file).getroot()
 
     def getBackground(self, name):

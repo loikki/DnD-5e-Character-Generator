@@ -1,9 +1,11 @@
 import xml.etree.ElementTree as ET
+from os.path import join
+
 import core.proficiency as pfy
 
 class DnDClassParser:
     def __init__(self):
-        self.class_file = 'data/dnd/class.xml'
+        self.class_file = join('data', 'dnd', 'class.xml')
         self.root = ET.parse(self.class_file).getroot()
 
     def getClass(self, dnd_class):

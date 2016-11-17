@@ -1,8 +1,11 @@
 import xml.etree.ElementTree as ET
+from os.path import join
+
+import core.proficiency as pfy
 
 class RaceParser():
     def __init__(self):
-        self.race_file = 'data/dnd/race.xml'
+        self.race_file = join('data', 'dnd', 'race.xml')
         self.root = ET.parse(self.race_file).getroot()
 
     def getRace(self, race):
@@ -122,3 +125,28 @@ class Race():
         print "Race: ", self.race_name
         print "Subrace: ", self.subrace_name
         print "Choices: ", self.choice
+        print "Proficiency: "
+        self.getProficiency(None).write()
+
+
+    def getProficiency(self, parser):
+        """
+        :param RaceParser parser: If none, create one
+        """
+        proficiency = pfy.Proficiency()
+        if parser is None:
+            parser = RaceParser()
+
+        race = parser.getRace(self.race_name)
+        prof = race.find('proficiency')
+        proficiency = pfy.getLocalProficiency(prof, proficiency)
+
+        if len(self.choice) > 0:
+            choice = parser.getChoice(self.race_name)
+            i = 0
+            for value in choice:
+                proficiency = pfy.getChoiceProficiency(
+                    proficiency, value, self.choice[i:i+value[2]])
+                i += value[2]
+
+        return proficiency
