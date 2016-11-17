@@ -26,9 +26,7 @@ def setupCharacterChoice(self):
     self.tab0_character_choice.setSizePolicy(sizePolicy)
     self.tab0_character_choice.setObjectName(_fromUtf8("tab0_character_choice"))
     # create and add an item into the list
-    item = QtGui.QListWidgetItem()
     self.loadListCharacters()
-    self.tab0_character_choice.addItem(item)
     # add the list
     self.tab0_character_choice_layout.addWidget(self.tab0_character_choice)
 

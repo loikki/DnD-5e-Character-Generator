@@ -122,16 +122,16 @@ class Character:
             self.ability[Ability.charisma] = int(cha)
             
     def setName(self, name):
-        self.name = name
+        self.name = str(name)
 
     def setPlayer(self, player):
-        self.player = player
+        self.player = str(player)
 
     def setCampaign(self, campaign):
-        self.campaign = campaign
+        self.campaign = str(campaign)
 
     def setGender(self, gender):
-        self.gender = gender
+        self.gender = str(gender)
 
     def setAge(self, age):
         self.age = int(age)

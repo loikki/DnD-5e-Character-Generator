@@ -136,7 +136,7 @@ class CharacterGenerator(object):
     # tool bar
     def saveCharacter(self):
         pickle.dump(self.character, open(
-            os.path.join("data", "saved", "player", + self.character.name + ".p"), 'wb'))
+            os.path.join("data", "saved", "player", self.character.name + ".p"), 'wb'))
 
     def printCharacter(self):
         print "Not implemented yet"
