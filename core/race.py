@@ -129,11 +129,12 @@ class Race():
         self.getProficiency(None).write()
 
 
-    def getProficiency(self, parser):
+    def getProficiency(self, parser=None, proficiency=None):
         """
         :param RaceParser parser: If none, create one
         """
-        proficiency = pfy.Proficiency()
+        if proficiency is None:
+            proficiency = pfy.Proficiency()
         if parser is None:
             parser = RaceParser()
 

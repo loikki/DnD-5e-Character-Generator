@@ -44,7 +44,15 @@ class BackgroundParser():
         child = self.getBackground(background)
         for ideal in child.find('ideal'):
             if ideal.get('name') == ideal_name:
-                return ideal.text
+                description = '<p align="center">' + ideal.text
+                description += "(" + ideal.get('alignment') + ")</p>"
+                return description
+
+    def getIdealAlignement(self, background, ideal_name):
+        child = self.getBackground(background)
+        for ideal in child.find('ideal'):
+            if ideal.get('name') == ideal_name:
+                return ideal.get('alignment')
 
     def getFlawDescription(self, background, value):
         child = self.getBackground(background)
@@ -144,11 +152,12 @@ class Background():
         print "Proficiency: "
         self.getProficiency(None).write()
 
-    def getProficiency(self, parser):
+    def getProficiency(self, parser=None, proficiency=None):
         """
         :param BackgroundParser parser: If none, create one
         """
-        proficiency = pfy.Proficiency()
+        if proficiency is None:
+            proficiency = pfy.Proficiency()
         if parser is None:
             parser = BackgroundParser()
 

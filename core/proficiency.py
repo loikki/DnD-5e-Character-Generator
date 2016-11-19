@@ -177,7 +177,7 @@ class LanguageProficiency(Enum):
     giant = 3
     gnomish = 4
     goblin = 5
-    halfing = 6
+    halfling = 6
     orc = 7
     abyssal = 8
     celestial = 9

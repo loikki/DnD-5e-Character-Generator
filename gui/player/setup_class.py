@@ -75,5 +75,6 @@ def setupClass(self):
     self.horizontalLayout_9.addLayout(self.tab3_layout)
 
     self.changeClass(self.tab3_class_combo.currentText())
+    self.changeSpecialization(self.tab3_specialization_combo.currentText())
     self.main_tab.addTab(self.tab3, "Class")
 

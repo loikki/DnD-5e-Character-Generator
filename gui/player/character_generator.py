@@ -18,6 +18,7 @@ import core.race as race
 import core.dnd_class as dnd_class
 import core.character as character
 import core.spell as spell
+import core.proficiency as proficiency
 
 from gui.player.setup_character_choice import setupCharacterChoice
 from gui.player.setup_description import setupDescription
@@ -205,6 +206,27 @@ class CharacterGenerator(object):
         self.tab0_wis_value.setText(str(character.getWisdom()))
         self.tab0_cha_value.setText(str(character.getCharisma()))
         self.character.background.getProficiency(None)
+        self.loadProficiency(character)
+
+
+    def loadProficiency(self, character):
+        for i in range(len(self.tab0_list_skill)):
+            self.gridLayout_15.removeWidget(self.tab0_list_skill[i])
+            self.tab0_list_skill[i].deleteLater()
+
+        self.tab0_list_skill = []
+        # skills
+        skills = character.getProficiency().skills
+        j = 0
+        for i in range(len(skills)):
+            if skills[i]:
+                label = QtGui.QLabel(
+                    choiceLabel(proficiency.SkillProficiency(i).name),
+                    self.tab0_skill_layout)
+                label.setAlignment(QtCore.Qt.AlignCenter)
+                self.gridLayout_15.addWidget(label, int(j/2), j%2)
+                self.tab0_list_skill.append(label)
+                j += 1
 
         
     # --------------- DESCRIPTION FUNCTIONS -------------------------------
@@ -361,11 +383,18 @@ class CharacterGenerator(object):
         sizePolicy.setVerticalStretch(0)
 
         for i in range(len(self.tab2_choice_list)):
-            self.tab2_choices_layout.removeWidget(self.tab2_choice_list[i])
-            self.tab2_choice_list[i].deleteLater()
-
-        j = -1
+            # delete spacer
+            if i == 0 or (i == len(self.tab2_choice_list)-1 and i==3):
+                self.tab2_choices_layout.removeItem(self.tab2_choice_list[i])
+            else:
+                self.tab2_choices_layout.removeWidget(self.tab2_choice_list[i])
+                self.tab2_choice_list[i].deleteLater()
         self.tab2_choice_list = []
+
+        j = 0
+        spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.tab2_choice_list.append(spacer)
+        self.tab2_choices_layout.addItem(spacer, int(j/4), j%4)
         for choice in list_choice:
             for i in range(choice[2]):
                 j += 1
@@ -377,6 +406,7 @@ class CharacterGenerator(object):
                 self.tab2_choice_list.append(label)
                 j += 1
                 combo = QtGui.QComboBox(self.tab2)
+                combo.activated.connect(self.makeRaceChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], getLanguages())
                 for i in choice[1]:
@@ -385,13 +415,22 @@ class CharacterGenerator(object):
                 self.tab2_choice_list.append(combo)
 
         if j < 3:
-            while j<3:
-                j += 1
-                label = QtGui.QLabel("", self.tab2)
-                label.setSizePolicy(sizePolicy)
-                self.tab2_choices_layout.addWidget(label, int(j/4), j%4)
-                self.tab2_choice_list.append(label)
+            j += 1
+            spacer1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+            self.tab2_choice_list.append(spacer1)
+            self.tab2_choices_layout.addItem(spacer1, int(j/4), j%4)
 
+
+    def makeRaceChoice(self, useless):
+        """ Update the list of choice in the character's race
+        """
+        choice = []
+        for i in range(len(self.tab2_choice_list)):
+            if i%2 == 0 and i!=0:
+                choice.append(str(self.tab2_choice_list[i].currentText()))
+                
+        self.character.race.choice = choice
+            
 
     # --------------- CLASS FUNCTIONS --------------------------------------
 
@@ -457,6 +496,7 @@ class CharacterGenerator(object):
                 self.tab3_choices_layout.addWidget(label, j, 0)
                 self.tab3_choice_list.append(label)
                 combo = QtGui.QComboBox(self.tab3)
+                combo.activated[str].connect(self.makeClassChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], getLanguages())
                 for i in choice[1]:
@@ -467,6 +507,16 @@ class CharacterGenerator(object):
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         self.tab3_choice_list.append(spacer)
         self.tab3_choices_layout.addItem(spacer)
+
+    def makeClassChoice(self, useless):
+        """ Update the list of choice in the character's background
+        """
+        choice = []
+        for i in range(len(self.tab3_choice_list)):
+            if i%2 == 0 and i!=0:
+                choice.append(str(self.tab3_choice_list[i].currentText()))
+                
+        self.character.dnd_class.choice = choice
 
     # --------------- BACKGROUND FUNCTIONS ---------------------------------
         
@@ -568,7 +618,7 @@ class CharacterGenerator(object):
         choice = []
         for i in range(len(self.tab5_choice_list)):
             if i%3 == 2:
-                choice.append(self.tab5_choice_list[i].currentText())
+                choice.append(str(self.tab5_choice_list[i].currentText()))
                 
         self.character.background.choice = choice
         
@@ -625,8 +675,18 @@ class CharacterGenerator(object):
         self.tab5_ideal_combo.setCurrentIndex(rollDice(1, nber_ideal)-1)
         ideal = self.tab5_ideal_combo.currentText()
         self.changeIdealDescription(ideal)
+
         # alignment
-        self.tab5_alignment_combo.setCurrentIndex(rollDice(1,9)-1)
+        align = self.background_parser.getIdealAlignement(background, ideal)
+        if lower(align) == 'any':
+            self.tab5_alignment_combo.setCurrentIndex(rollDice(1,9)-1)
+        else:
+            index_align = []
+            for i in range(9):
+                if lower(align) in lower(str(self.tab5_alignment_combo.itemText(i))):
+                    index_align.append(i)
+            roll = rollDice(1,len(index_align))-1
+            self.tab5_alignment_combo.setCurrentIndex(index_align[roll])
         self.character.background.setAlignment(
             self.tab5_alignment_combo.currentText())
 

@@ -55,6 +55,13 @@ class Character:
         self.notable_features = None
         self.image = None
 
+
+    def getProficiency(self):
+        prof = self.race.getProficiency()
+        prof = self.dnd_class.getProficiency(proficiency=prof)
+        prof = self.background.getProficiency(proficiency=prof)
+        return prof
+
     # Strength
         
     def getStrength(self):
