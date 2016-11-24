@@ -11,6 +11,9 @@ def getLocalProficiency(parser, proficiency):
     :param Proficiency proficiency: object where to add proficiencies
     :returns: Completed ObjectProficiency
     """
+    for i in parser.findall("saving_throw"):
+        name = toProficiencyName(i.get('name'))
+        proficiency.addSavingProficiency(name)        
     for i in parser.findall("skill"):
         name = toProficiencyName(i.get('name'))
         proficiency.addSkillProficiency(name)
@@ -38,6 +41,8 @@ def getChoiceProficiency(proficiency, value, choice):
     if value[2] != len(choice):
         raise Exception("Number of choice not respected")
     for i in choice:
+        if value[0] == 'saving_throw':
+            proficiency.addSavingProficiency(lower(str(i)))
         if value[0] == 'language':
             proficiency.addLanguageProficiency(lower(str(i)))
         elif value[0] == 'skill':
@@ -49,6 +54,15 @@ def getChoiceProficiency(proficiency, value, choice):
         elif value[0] == 'tool':
             proficiency.addToolProficiency(lower(str(i)))
     return proficiency
+
+class Ability(Enum):
+    strength = 0
+    dexterity = 1
+    constitution = 2
+    intelligence = 3
+    wisdom = 4
+    charisma = 5
+
 
 class SkillProficiency(Enum):
     acrobatics = 0
@@ -190,15 +204,20 @@ class LanguageProficiency(Enum):
 
 class Proficiency():
     def __init__(self):
+        self.saving = [False]*6
         self.skills = [False]*18
         self.weapons = [False]*38
-        self.tools = [False]*3
-        self.armors = [False]*39
+        self.tools = [False]*39
+        self.armors = [False]*3
         self.languages = [False]*16
 
     def addLanguageProficiency(self, prof):
         prof = LanguageProficiency[prof]
         self.languages[prof.value] = True
+
+    def addSavingProficiency(self, prof):
+        prof = Ability[prof]
+        self.saving[prof.value] = True
     
     def addSkillProficiency(self, prof):
         prof = SkillProficiency[prof]
@@ -222,22 +241,27 @@ class Proficiency():
         self.tools[prof.value] = True
 
     def write(self):
+        print "Saving Throws:\n"
+        for i in range(len(self.saving)):
+            if self.saving[i]:
+                print Ability(i).name.title()
+        print "Skills:\n"
         for i in range(len(self.skills)):
             if self.skills[i]:
                 print SkillProficiency(i).name.title()
-
+        print "Weapons:\n"
         for i in range(len(self.weapons)):
             if self.weapons[i]:
                 print WeaponProficiency(i).name.title()
-                
+        print "Armor:\n"
         for i in range(len(self.armors)):
             if self.armors[i]:
                 print ArmorProficiency(i).name.title()
-
+        print "Tools:\n"
         for i in range(len(self.tools)):
             if self.tools[i]:
                 print ToolProficiency(i).name.title()
-
+        print "Languages:\n"
         for i in range(len(self.languages)):
             if self.languages[i]:
                 print LanguageProficiency(i).name.title()

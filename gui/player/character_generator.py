@@ -6,9 +6,7 @@
 
 
 from PyQt4 import QtCore, QtGui
-import random
-from string import replace, lower
-import math
+from string import lower
 import pickle
 import os
 
@@ -19,6 +17,9 @@ import core.dnd_class as dnd_class
 import core.character as character
 import core.spell as spell
 import core.proficiency as proficiency
+import core.trait as trait
+
+import gui.player.tools as tools
 
 from gui.player.setup_character_choice import setupCharacterChoice
 from gui.player.setup_description import setupDescription
@@ -35,48 +36,6 @@ except AttributeError:
     def _fromUtf8(s):
         return s
 
-def rollDice(number_dice, type_dice):
-    """ roll (number_dice)d(type_dice)
-    :param int number_dice: Number of dice to roll
-    :param int type_dice: Type of dice (d4, d6, ...)
-    :returns: Value
-    """
-    value = 0
-    for i in range(number_dice):
-        value += random.randint(1,type_dice)
-    return value
-
-def rollAbility():
-    """ Roll 4d6 and remove the lowest one.
-    :return: Value of the rolls
-    """
-    rolls = [rollDice(1,6), rollDice(1,6), rollDice(1,6), rollDice(1,6)]
-    min_ind = rolls.index(min(rolls))
-    value = 0
-    for i in range(len(rolls)):
-        if i != min_ind:
-            value += rolls[i]
-    return value
-
-def choiceLabel(title):
-    """ Make the title nice
-    :param str title: String to process
-    :returns: str with a nice presentation
-    """
-    title = title.title()
-    return replace(title, '_', ' ')
-
-def getLanguages(allow_exotic=False):
-    """ Return the list of available languages
-    :param bool allow_exotic: Add the exotic languages to the list
-    :returns: [str] List of all the available languages
-    """
-    languages = ['Common', 'Dwarvish', 'Elvish', 'Giant', 'Gnomish',
-                 'Goblin', 'Halfling', 'Orc']
-    if allow_exotic:
-        languages.extend(['Abyssal', 'Celestial', 'Draconic', 'Deep Speech',
-                          'Infernal', 'Primordial', 'Sylvan', 'Undercommon'])
-    return languages
 
 class CharacterGenerator(object):
     def setupUi(self, MainWindow):
@@ -90,6 +49,7 @@ class CharacterGenerator(object):
         self.race_parser = race.RaceParser()
         self.class_parser = dnd_class.DnDClassParser()
         self.spell_parser = spell.SpellParser()
+        self.trait_parser = trait.TraitParser()
         
         # Create main tab
         self.centralwidget = QtGui.QWidget(MainWindow)
@@ -176,6 +136,8 @@ class CharacterGenerator(object):
     # --------------- Character Choice ------------------------------------
 
     def loadListCharacters(self):
+        if self.main_tab.currentIndex() != 0:
+            return
         self.list_character = []
         character_directory = os.path.join("data", "saved", "player", "")
         for character_file in os.listdir(character_directory):
@@ -216,18 +178,52 @@ class CharacterGenerator(object):
 
         self.tab0_list_skill = []
         # skills
-        skills = character.getProficiency().skills
+        prof = character.getProficiency()
+        skills = prof.skills
         j = 0
         for i in range(len(skills)):
             if skills[i]:
                 label = QtGui.QLabel(
-                    choiceLabel(proficiency.SkillProficiency(i).name),
+                    tools.choiceLabel(proficiency.SkillProficiency(i).name),
                     self.tab0_skill_layout)
                 label.setAlignment(QtCore.Qt.AlignCenter)
                 self.gridLayout_15.addWidget(label, int(j/2), j%2)
                 self.tab0_list_skill.append(label)
                 j += 1
 
+        # Saving
+        saving = prof.saving
+        for i in range(len(self.tab0_list_saving)):
+            self.hLayout_saving.removeWidget(self.tab0_list_saving[i])
+            self.tab0_list_saving[i].deleteLater()
+        self.tab0_list_saving = []
+
+        for i in range(len(saving)):
+            if saving[i]:
+                label = QtGui.QLabel(
+                    tools.choiceLabel(proficiency.Ability(i).name),
+                    self.tab0_saving_layout)
+                label.setAlignment(QtCore.Qt.AlignCenter)
+                self.hLayout_saving.addWidget(label)
+                self.tab0_list_saving.append(label)
+
+        # Object
+        for i in range(len(self.tab0_list_object)):
+            self.gridLayout_16.removeWidget(self.tab0_list_object[i])
+            self.tab0_list_object[i].deleteLater()
+        self.tab0_list_object = []
+        weapon = prof.weapons
+        j = tools.createObjectProficiencyLabel(
+            self, weapon, proficiency.WeaponProficiency)
+        tool = prof.tools
+        j = tools.createObjectProficiencyLabel(
+            self, tool, proficiency.ToolProficiency, j)
+        armor = prof.armors
+        j = tools.createObjectProficiencyLabel(
+            self, armor, proficiency.ArmorProficiency, j)   
+
+        # TODO add groupBox for languages
+        lang = prof.languages
         
     # --------------- DESCRIPTION FUNCTIONS -------------------------------
         
@@ -236,17 +232,17 @@ class CharacterGenerator(object):
         """
         if self.tab1_ability_style_combo.currentText() != 'Random':
             return
-        roll = rollAbility()
+        roll = tools.rollAbility()
         self.tab1_ability_value_1.setText(str(roll))
-        roll = rollAbility()
+        roll = tools.rollAbility()
         self.tab1_ability_value_2.setText(str(roll))
-        roll = rollAbility()
+        roll = tools.rollAbility()
         self.tab1_ability_value_3.setText(str(roll))
-        roll = rollAbility()
+        roll = tools.rollAbility()
         self.tab1_ability_value_4.setText(str(roll))
-        roll = rollAbility()
+        roll = tools.rollAbility()
         self.tab1_ability_value_5.setText(str(roll))
-        roll = rollAbility()
+        roll = tools.rollAbility()
         self.tab1_ability_value_6.setText(str(roll))
         self.character.dnd_class.getProficiency(None)
         self.character.write()
@@ -398,7 +394,7 @@ class CharacterGenerator(object):
         for choice in list_choice:
             for i in range(choice[2]):
                 j += 1
-                label = QtGui.QLabel(choiceLabel(choice[0]), self.tab2)
+                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.tab2)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
                     QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -408,7 +404,7 @@ class CharacterGenerator(object):
                 combo = QtGui.QComboBox(self.tab2)
                 combo.activated.connect(self.makeRaceChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
-                    choice = (choice[0], getLanguages())
+                    choice = (choice[0], tools.getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
                 self.tab2_choices_layout.addWidget(combo, int(j/4), j%4)
@@ -489,7 +485,7 @@ class CharacterGenerator(object):
         for choice in list_choice:
             for i in range(choice[2]):
                 j += 1
-                label = QtGui.QLabel(choiceLabel(choice[0]), self.tab3)
+                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.tab3)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
                     QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -498,7 +494,7 @@ class CharacterGenerator(object):
                 combo = QtGui.QComboBox(self.tab3)
                 combo.activated[str].connect(self.makeClassChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
-                    choice = (choice[0], getLanguages())
+                    choice = (choice[0], tools.getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
                 self.tab3_choices_layout.addWidget(combo, j, 1)
@@ -594,7 +590,7 @@ class CharacterGenerator(object):
         self.horizontalLayout_33.addItem(spacer)
         for choice in list_choice:
             for i in range(choice[2]):
-                label = QtGui.QLabel(choiceLabel(choice[0]), self.tab5_choice_layout)
+                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.tab5_choice_layout)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
                     QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
@@ -602,7 +598,7 @@ class CharacterGenerator(object):
                 self.tab5_choice_list.append(label)
                 combo = QtGui.QComboBox(self.tab5_choice_layout)
                 if choice[0] == 'language' and choice[1][0] == 'any':
-                    choice = (choice[0], getLanguages())
+                    choice = (choice[0], tools.getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
                 combo.activated[str].connect(self.makeBackgroundChoice)
@@ -646,7 +642,7 @@ class CharacterGenerator(object):
         """
         nber_background = len(self.background_parser.getListBackground())
         self.tab5_background_combo.setCurrentIndex(
-            rollDice(1, nber_background) - 1)
+            tools.rollDice(1, nber_background) - 1)
         background = self.tab5_background_combo.currentText()
         self.changeBackground(background)
         self.randomPersonality()
@@ -661,31 +657,31 @@ class CharacterGenerator(object):
         nber_bond = self.background_parser.getNumberBond(background)
         nber_ideal = len(self.background_parser.getListIdeal(background))
         # bond
-        self.tab5_bond_spinbox.setValue(rollDice(1, nber_bond))
+        self.tab5_bond_spinbox.setValue(tools.rollDice(1, nber_bond))
         # flaw
-        self.tab5_flaw_spinbox.setValue(rollDice(1, nber_flaw))
+        self.tab5_flaw_spinbox.setValue(tools.rollDice(1, nber_flaw))
         # personality
-        roll1 = rollDice(1, nber_perso)
+        roll1 = tools.rollDice(1, nber_perso)
         self.tab5_personality_spinbox_1.setValue(roll1)
-        roll2 = rollDice(1, nber_perso - 1)
+        roll2 = tools.rollDice(1, nber_perso - 1)
         if roll2 >= roll1:
             roll2 += 1
         self.tab5_personality_spinbox_2.setValue(roll2)
         # ideal
-        self.tab5_ideal_combo.setCurrentIndex(rollDice(1, nber_ideal)-1)
+        self.tab5_ideal_combo.setCurrentIndex(tools.rollDice(1, nber_ideal)-1)
         ideal = self.tab5_ideal_combo.currentText()
         self.changeIdealDescription(ideal)
 
         # alignment
         align = self.background_parser.getIdealAlignement(background, ideal)
         if lower(align) == 'any':
-            self.tab5_alignment_combo.setCurrentIndex(rollDice(1,9)-1)
+            self.tab5_alignment_combo.setCurrentIndex(tools.rollDice(1,9)-1)
         else:
             index_align = []
             for i in range(9):
                 if lower(align) in lower(str(self.tab5_alignment_combo.itemText(i))):
                     index_align.append(i)
-            roll = rollDice(1,len(index_align))-1
+            roll = tools.rollDice(1,len(index_align))-1
             self.tab5_alignment_combo.setCurrentIndex(index_align[roll])
         self.character.background.setAlignment(
             self.tab5_alignment_combo.currentText())
@@ -837,6 +833,7 @@ class CharacterGenerator(object):
         for i in range(item.columnCount()):
             spell.append(item.text(i))
         QtGui.QTreeWidgetItem(spell_tree, spell)
+        
 
     def removeSpell(self):
         item = self.tab4_tab1_known_tree.currentItem()
@@ -861,6 +858,55 @@ class CharacterGenerator(object):
         index = item.treeWidget().indexOfTopLevelItem(item)
         item.treeWidget().takeTopLevelItem(index)
 
+    def updateTrait(self):
+        if (self.tab4_spell_tab.currentIndex() != 2 and
+            self.main_tab.currentIndex() != 8):
+            return
+        race = self.character.race.race_name
+        subrace = self.character.race.subrace_name
+        trait = self.race_parser.getTrait(race, subrace)
+        self.tab4_tab2_tree.clear()
+        self.tab8_trait_tree.clear()
+
+        for i in trait:
+            max_use = self.trait_parser.getMaxUse(i.get('name'))
+            if max_use is None:
+                max_use = ''
+            item = QtGui.QTreeWidgetItem(self.tab4_tab2_tree,
+                                         [i.get('name'), max_use])
+            item = QtGui.QTreeWidgetItem(self.tab8_trait_tree,
+                                         [i.get('name'), max_use])
+
+    def updateTraitDescription(self, value):
+        if value is None:
+            self.tab4_tab2_description.clear()
+            return
+        description = self.trait_parser.getDescription(value.text(0))
+        self.tab4_tab2_description.setText(description)
+
+    # --------------------------- STAT --------------------------------
+
+    def updateStatList(self):
+        if self.main_tab.currentIndex() != 8:
+            return
+        # trait
+        self.updateTrait()
+
+        self.tab8_spell_tree.clear()
+        # cantrip
+        root = self.tab4_tab0_known_tree.invisibleRootItem()
+        cantrip = QtGui.QTreeWidgetItem(self.tab8_spell_tree, ["Cantrip"])
+        for i in range(root.childCount()):
+            item = root.child(i).clone()
+            cantrip.addChild(item)
+            
+        # spell
+        root = self.tab4_tab1_known_tree.invisibleRootItem()
+        for i in range(root.childCount()):
+            item = root.child(i).clone()
+            self.tab8_spell_tree.invisibleRootItem().addChild(item)                
+
+        
     # --------------------------- GUI ---------------------------------                    
         
         

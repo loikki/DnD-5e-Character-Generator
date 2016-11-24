@@ -1,4 +1,4 @@
-from char_enum import Ability
+from core.proficiency import Ability
 from core.background import Background
 from core.dnd_class import DnDClass
 from core.race import Race
@@ -65,68 +65,68 @@ class Character:
     # Strength
         
     def getStrength(self):
-        return self.ability[Ability.strength]
+        return self.ability[Ability.strength.value]
 
     def setStrength(self, strength):
         if strength == '':
-            self.ability[Ability.strength] = None
+            self.ability[Ability.strength.value] = None
         else:
-            self.ability[Ability.strength] = int(strength)
+            self.ability[Ability.strength.value] = int(strength)
 
     # Dexterity
 
     def getDexterity(self):
-        return self.ability[Ability.dexterity]
+        return self.ability[Ability.dexterity.value]
 
     def setDexterity(self, dex):
         if dex == '':
-            self.ability[Ability.dexterity] = None
+            self.ability[Ability.dexterity.value] = None
         else:
-            self.ability[Ability.dexterity] = int(dex)
+            self.ability[Ability.dexterity.value] = int(dex)
 
     # Constitution
 
     def getConstitution(self):
-        return self.ability[Ability.constitution]
+        return self.ability[Ability.constitution.value]
 
     def setConstitution(self, con):
         if con == '':
-            self.ability[Ability.constitution] = None
+            self.ability[Ability.constitution.value] = None
         else:
-            self.ability[Ability.constitution] = int(con)
+            self.ability[Ability.constitution.value] = int(con)
 
     # Intelligence
         
     def getIntelligence(self):
-        return self.ability[Ability.intelligence]
+        return self.ability[Ability.intelligence.value]
 
     def setIntelligence(self, intelligence):
         if intelligence == '':
-            self.ability[Ability.intelligence] = None
+            self.ability[Ability.intelligence.value] = None
         else:
-            self.ability[Ability.intelligence] = int(intelligence)
+            self.ability[Ability.intelligence.value] = int(intelligence)
 
     # Wisdom
     
     def getWisdom(self):
-        return self.ability[Ability.wisdom]
+        return self.ability[Ability.wisdom.value]
 
     def setWisdom(self, wis):
         if wis == '':
-            self.ability[Ability.wisdom] = None
+            self.ability[Ability.wisdom.value] = None
         else:
-            self.ability[Ability.wisdom] = int(wis)
+            self.ability[Ability.wisdom.value] = int(wis)
 
     # Charisma
 
     def getCharisma(self):
-        return self.ability[Ability.charisma]
+        return self.ability[Ability.charisma.value]
 
     def setCharisma(self, cha):
         if cha == '':
-            self.ability[Ability.charisma] = None
+            self.ability[Ability.charisma.value] = None
         else:
-            self.ability[Ability.charisma] = int(cha)
+            self.ability[Ability.charisma.value] = int(cha)
             
     def setName(self, name):
         self.name = str(name)

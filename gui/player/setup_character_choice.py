@@ -6,6 +6,7 @@ except AttributeError:
     def _fromUtf8(s):
         return s
 
+
 def setupCharacterChoice(self):
     # create tab
     self.tab0 = QtGui.QWidget()
@@ -25,8 +26,7 @@ def setupCharacterChoice(self):
     sizePolicy.setHeightForWidth(self.tab0_character_choice.sizePolicy().hasHeightForWidth())
     self.tab0_character_choice.setSizePolicy(sizePolicy)
     self.tab0_character_choice.setObjectName(_fromUtf8("tab0_character_choice"))
-    # create and add an item into the list
-    self.loadListCharacters()
+
     # add the list
     self.tab0_character_choice_layout.addWidget(self.tab0_character_choice)
 
@@ -175,20 +175,13 @@ def setupCharacterChoice(self):
     self.horizontalLayout_42.setObjectName(_fromUtf8("horizontalLayout_42"))
     
     # saving throws
+    self.tab0_list_saving = []
     self.tab0_saving_skill_layout = QtGui.QVBoxLayout()
     self.tab0_saving_skill_layout.setObjectName(_fromUtf8("tab0_saving_skill_layout"))
     self.tab0_saving_layout = QtGui.QGroupBox("Saving Throws", self.tab0_proficiencies_layout)
     self.tab0_saving_layout.setObjectName(_fromUtf8("tab0_saving_layout"))
-    self.verticalLayout_30 = QtGui.QVBoxLayout(self.tab0_saving_layout)
-    self.verticalLayout_30.setObjectName(_fromUtf8("verticalLayout_30"))
-    self.tab0_1_saving = QtGui.QLabel("Strength", self.tab0_saving_layout)
-    self.tab0_1_saving.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_1_saving.setObjectName(_fromUtf8("tab0_1_saving"))
-    self.verticalLayout_30.addWidget(self.tab0_1_saving)
-    self.tab0_2_saving = QtGui.QLabel("Wisdom", self.tab0_saving_layout)
-    self.tab0_2_saving.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_2_saving.setObjectName(_fromUtf8("tab0_2_saving"))
-    self.verticalLayout_30.addWidget(self.tab0_2_saving)
+    self.hLayout_saving = QtGui.QHBoxLayout(self.tab0_saving_layout)
+    self.hLayout_saving.setObjectName(_fromUtf8("hLayout_saving"))
     self.tab0_saving_skill_layout.addWidget(self.tab0_saving_layout)
 
     # skill
@@ -201,35 +194,15 @@ def setupCharacterChoice(self):
     self.horizontalLayout_42.addLayout(self.tab0_saving_skill_layout)
 
     # Object proficiencies
+    self.tab0_list_object = []
     self.tab0_object_proficiency_layout = QtGui.QGroupBox("Objects", self.tab0_proficiencies_layout)
     self.tab0_object_proficiency_layout.setObjectName(_fromUtf8("tab0_object_proficiency_layout"))
     self.gridLayout_16 = QtGui.QGridLayout(self.tab0_object_proficiency_layout)
     self.gridLayout_16.setObjectName(_fromUtf8("gridLayout_16"))
-    self.tab0_1_object = QtGui.QLabel("Artisan's tools", self.tab0_object_proficiency_layout)
-    self.tab0_1_object.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_1_object.setObjectName(_fromUtf8("tab0_1_object"))
-    self.gridLayout_16.addWidget(self.tab0_1_object, 1, 0, 1, 1)
-    self.tab0_3_object = QtGui.QLabel("Club", self.tab0_object_proficiency_layout)
-    self.tab0_3_object.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_3_object.setObjectName(_fromUtf8("tab0_3_object"))
-    self.gridLayout_16.addWidget(self.tab0_3_object, 2, 0, 1, 1)
-    self.tab0_4_object = QtGui.QLabel("Shortsword", self.tab0_object_proficiency_layout)
-    self.tab0_4_object.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_4_object.setObjectName(_fromUtf8("tab0_4_object"))
-    self.gridLayout_16.addWidget(self.tab0_4_object, 2, 1, 1, 1)
-    self.tab0_6_object = QtGui.QLabel("Shortbow", self.tab0_object_proficiency_layout)
-    self.tab0_6_object.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_6_object.setObjectName(_fromUtf8("tab0_6_object"))
-    self.gridLayout_16.addWidget(self.tab0_6_object, 3, 1, 1, 1)
-    self.tab0_2_object = QtGui.QLabel("Longsword", self.tab0_object_proficiency_layout)
-    self.tab0_2_object.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_2_object.setObjectName(_fromUtf8("tab0_2_object"))
-    self.gridLayout_16.addWidget(self.tab0_2_object, 1, 1, 1, 1)
-    self.tab0_5_object = QtGui.QLabel("Light Armor", self.tab0_object_proficiency_layout)
-    self.tab0_5_object.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_5_object.setObjectName(_fromUtf8("tab0_5_object"))
-    self.gridLayout_16.addWidget(self.tab0_5_object, 3, 0, 1, 1)
     self.horizontalLayout_42.addWidget(self.tab0_object_proficiency_layout)
     self.verticalLayout_17.addWidget(self.tab0_proficiencies_layout)
     self.horizontalLayout_2.addWidget(self.tab0_summary_layout)
     self.main_tab.addTab(self.tab0, "Character Choice")
+
+    self.main_tab.currentChanged.connect(self.loadListCharacters)
+    self.loadListCharacters()

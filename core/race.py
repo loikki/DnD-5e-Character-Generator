@@ -108,6 +108,28 @@ class RaceParser():
             list_choice.append(value)
         return list_choice
 
+    def getTrait(self, race, subrace):
+        """
+        :param str race: Race name
+        :param str subrace: Subrace name
+        """
+        if race is None:
+            return
+        child = self.getSubrace(race, subrace)
+        list_trait = []
+        child_test = child.find('trait')
+        if child_test is not None:
+            for trait in child_test:
+                list_trait.append(trait)
+
+        race_test = self.getRace(race).find('trait')
+        if race_test is None:
+            return list_trait
+
+        for trait in race_test:
+            list_trait.append(trait)
+        return list_trait
+
 
 class Race():
     def __init__(self):

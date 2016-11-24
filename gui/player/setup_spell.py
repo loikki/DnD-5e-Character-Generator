@@ -183,6 +183,8 @@ def setupSpell(self):
     self.tab4_tab2_description.setObjectName(_fromUtf8("tab4_tab2_description"))
     self.horizontalLayout_40.addWidget(self.tab4_tab2_description)
     self.tab4_spell_tab.addTab(self.tab4_tab2, "Trait")
+    self.tab4_spell_tab.currentChanged.connect(self.updateTrait)
+    self.tab4_tab2_tree.currentItemChanged.connect(self.updateTraitDescription)
 
     self.selectClassSpell('any')
     self.verticalLayout_3.addWidget(self.tab4_spell_tab)
