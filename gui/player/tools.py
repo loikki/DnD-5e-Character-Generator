@@ -4,6 +4,14 @@ from string import replace, lower
 import math
 
 
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+
+
 def rollDice(number_dice, type_dice):
     """ roll (number_dice)d(type_dice)
     :param int number_dice: Number of dice to roll

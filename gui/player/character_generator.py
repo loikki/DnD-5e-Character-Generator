@@ -8,84 +8,45 @@
 from PyQt4 import QtCore, QtGui
 from string import lower
 import pickle
-import os
+import os, sys
 
 from core.character import Character
 import core.background as background
 import core.race as race
 import core.dnd_class as dnd_class
 import core.character as character
-import core.spell as spell
 import core.proficiency as proficiency
-import core.trait as trait
 
 import gui.player.tools as tools
 
-from gui.player.setup_character_choice import setupCharacterChoice
 from gui.player.setup_description import setupDescription
 from gui.player.setup_background import setupBackground
 from gui.player.setup_race import setupRace
 from gui.player.setup_class import setupClass
-from gui.player.setup_spell import setupSpell
-from gui.player.setup_equipment import setupEquipment
-from gui.player.setup_stat import setupStat
-
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    def _fromUtf8(s):
-        return s
 
 
 class CharacterGenerator(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(1005, 719)
-        MainWindow.setWindowTitle("Loikki's Character Generator")
+    def setupUi(self):
+        self.wizard = QtGui.QWizard()
+        self.wizard.setObjectName(tools._fromUtf8("Character Generator"))
+        self.wizard.resize(1005, 719)
+        self.wizard.setWindowTitle("Character Generator")
 
         # by default, no character is loaded
         self.character = character.Character()
         self.background_parser = background.BackgroundParser()
         self.race_parser = race.RaceParser()
         self.class_parser = dnd_class.DnDClassParser()
-        
-        # Create main tab
-        self.centralwidget = QtGui.QWidget(MainWindow)
-        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-        self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.main_tab = QtGui.QTabWidget(self.centralwidget)
-        self.main_tab.setObjectName(_fromUtf8("main_tab"))
+
 
         # create each individual tabs
-        setupCharacterChoice(self)
-        setupDescription(self)
-        setupRace(self)
-        setupClass(self)
-        setupBackground(self)
-        self.setupNotes()
+        self.wizard.addPage(setupDescription(self))
+        self.wizard.addPage(setupRace(self))
+        self.wizard.addPage(setupClass(self))
+        self.wizard.addPage(setupBackground(self))
+        self.wizard.addPage(self.setupNotes())
 
-        # create toolbar
-        self.horizontalLayout.addWidget(self.main_tab)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.toolBar = QtGui.QToolBar(MainWindow)
-        self.toolBar.setObjectName(_fromUtf8("toolBar"))
-        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
-        self.actionPrint = QtGui.QAction("Print", MainWindow)
-        self.actionPrint.setObjectName(_fromUtf8("actionPrint"))
-        self.actionPrint.triggered.connect(self.printCharacter)
-
-        self.actionSave = QtGui.QAction("Save", MainWindow)
-        self.actionSave.setObjectName(_fromUtf8("actionSave"))
-        self.actionSave.triggered.connect(self.saveCharacter)
-        
-        self.actionQuit = QtGui.QAction("Quit", MainWindow)
-        self.actionQuit.setObjectName(_fromUtf8("actionQuit"))
-        self.actionQuit.triggered.connect(QtGui.qApp.quit)
-
-        self.toolBar.addAction(self.actionSave)
-        self.toolBar.addAction(self.actionPrint)
-        self.toolBar.addAction(self.actionQuit)
+        self.wizard.show()
 
     # ------------------ ACTION ---------------------------------------
     
@@ -93,29 +54,6 @@ class CharacterGenerator(object):
     def saveCharacter(self):
         pickle.dump(self.character, open(
             os.path.join("data", "saved", "player", self.character.name + ".p"), 'wb'))
-
-    def printCharacter(self):
-        print "Not implemented yet"
-
-    def initializeCharacter(self, new):
-        """ 
-        :param bool new: Is a new character?
-        """
-        return
-    
-    # character choice tab
-    def newCharacter(self):
-        self.character = Character()
-        self.initializeCharacter(True)
-        
-    def loadCharacter(self):
-        character = self.tab0_character_choice.currentItem().text()
-        for c in self.list_character:
-            if character == c.name:
-                character = c
-                break
-        self.character = character
-        self.initializeCharacter(True)
         
     # description tab
     def importImage(self):
@@ -128,98 +66,6 @@ class CharacterGenerator(object):
         self.character.image = None
         self.tab1_img.clear()
 
-    # --------------- Character Choice ------------------------------------
-
-    def loadListCharacters(self):
-        if self.main_tab.currentIndex() != 0:
-            return
-        self.list_character = []
-        character_directory = os.path.join("data", "saved", "player", "")
-        for character_file in os.listdir(character_directory):
-            self.list_character.append(pickle.load(
-                open(character_directory + character_file, 'rb')))
-        self.tab0_character_choice.clear()
-        for character in self.list_character:
-            self.tab0_character_choice.addItem(character.name)
-
-    def printSummary(self):
-        character = self.tab0_character_choice.currentItem().text()
-        for c in self.list_character:
-            if character == c.name:
-                character = c
-                break
-
-        self.tab0_raceLineEdit.setText(character.race.subrace_name)
-        self.tab0_classLineEdit.setText(character.dnd_class.class_name)
-        self.tab0_specializationLineEdit.setText(
-            character.dnd_class.specialization_name)
-        self.tab0_backgroundLineEdit.setText(
-            character.background.background_name)
-        self.tab0_experienceLevelLineEdit.setText(
-            str(character.experience))
-        self.tab0_str_value.setText(str(character.getStrength()))
-        self.tab0_dex_value.setText(str(character.getDexterity()))
-        self.tab0_con_value.setText(str(character.getConstitution()))
-        self.tab0_int_value.setText(str(character.getIntelligence()))
-        self.tab0_wis_value.setText(str(character.getWisdom()))
-        self.tab0_cha_value.setText(str(character.getCharisma()))
-        self.character.background.getProficiency(None)
-        self.loadProficiency(character)
-
-
-    def loadProficiency(self, character):
-        for i in range(len(self.tab0_list_skill)):
-            self.gridLayout_15.removeWidget(self.tab0_list_skill[i])
-            self.tab0_list_skill[i].deleteLater()
-
-        self.tab0_list_skill = []
-        # skills
-        prof = character.getProficiency()
-        skills = prof.skills
-        j = 0
-        for i in range(len(skills)):
-            if skills[i]:
-                label = QtGui.QLabel(
-                    tools.choiceLabel(proficiency.SkillProficiency(i).name),
-                    self.tab0_skill_layout)
-                label.setAlignment(QtCore.Qt.AlignCenter)
-                self.gridLayout_15.addWidget(label, int(j/2), j%2)
-                self.tab0_list_skill.append(label)
-                j += 1
-
-        # Saving
-        saving = prof.saving
-        for i in range(len(self.tab0_list_saving)):
-            self.hLayout_saving.removeWidget(self.tab0_list_saving[i])
-            self.tab0_list_saving[i].deleteLater()
-        self.tab0_list_saving = []
-
-        for i in range(len(saving)):
-            if saving[i]:
-                label = QtGui.QLabel(
-                    tools.choiceLabel(proficiency.Ability(i).name),
-                    self.tab0_saving_layout)
-                label.setAlignment(QtCore.Qt.AlignCenter)
-                self.hLayout_saving.addWidget(label)
-                self.tab0_list_saving.append(label)
-
-        # Object
-        for i in range(len(self.tab0_list_object)):
-            self.gridLayout_16.removeWidget(self.tab0_list_object[i])
-            self.tab0_list_object[i].deleteLater()
-        self.tab0_list_object = []
-        weapon = prof.weapons
-        j = tools.createObjectProficiencyLabel(
-            self, weapon, proficiency.WeaponProficiency)
-        tool = prof.tools
-        j = tools.createObjectProficiencyLabel(
-            self, tool, proficiency.ToolProficiency, j)
-        armor = prof.armors
-        j = tools.createObjectProficiencyLabel(
-            self, armor, proficiency.ArmorProficiency, j)   
-
-        # TODO add groupBox for languages
-        lang = prof.languages
         
     # --------------- DESCRIPTION FUNCTIONS -------------------------------
         
@@ -341,22 +187,22 @@ class CharacterGenerator(object):
     def changeRace(self, race):
         """ Action that will be done when the user change the race
         """
-        self.tab2_race_description.setText(self.race_parser.getDescription(race))
+        self.page1_race_description.setText(self.race_parser.getDescription(race))
         self.updateSubrace()
         self.character.race.setRace(race)
 
     def updateSubrace(self):
         """ Update the list of subrace
         """
-        race = self.tab2_race_choice_combo.currentText()
-        self.tab2_subrace_choice_combo.clear()
+        race = self.page1_race_choice_combo.currentText()
+        self.page1_subrace_choice_combo.clear()
         for i in self.race_parser.getListSubrace(race):
-            self.tab2_subrace_choice_combo.addItem(i)
-        self.changeSubrace(self.tab2_subrace_choice_combo.currentText())
+            self.page1_subrace_choice_combo.addItem(i)
+        self.changeSubrace(self.page1_subrace_choice_combo.currentText())
         
     def changeSubrace(self, subrace):
-        race = self.tab2_race_choice_combo.currentText()
-        self.tab2_subrace_description.setText(
+        race = self.page1_race_choice_combo.currentText()
+        self.page1_subrace_description.setText(
             self.race_parser.getSubraceDescription(race, subrace))
         self.changeRaceTabChoice()
         self.character.race.setSubrace(subrace)
@@ -365,8 +211,8 @@ class CharacterGenerator(object):
         """ Update the race choice widgets
         :param str background: race name
         """
-        race = self.tab2_race_choice_combo.currentText()
-        subrace = self.tab2_subrace_choice_combo.currentText()
+        race = self.page1_race_choice_combo.currentText()
+        subrace = self.page1_subrace_choice_combo.currentText()
         list_choice = self.race_parser.getChoice(race)
         list_choice.extend(self.race_parser.getSubraceChoice(race, subrace))
         sizePolicy = QtGui.QSizePolicy(
@@ -374,52 +220,52 @@ class CharacterGenerator(object):
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
 
-        for i in range(len(self.tab2_choice_list)):
+        for i in range(len(self.page1_choice_list)):
             # delete spacer
-            if i == 0 or (i == len(self.tab2_choice_list)-1 and i==3):
-                self.tab2_choices_layout.removeItem(self.tab2_choice_list[i])
+            if i == 0 or (i == len(self.page1_choice_list)-1 and i==3):
+                self.page1_choices_layout.removeItem(self.page1_choice_list[i])
             else:
-                self.tab2_choices_layout.removeWidget(self.tab2_choice_list[i])
-                self.tab2_choice_list[i].deleteLater()
-        self.tab2_choice_list = []
+                self.page1_choices_layout.removeWidget(self.page1_choice_list[i])
+                self.page1_choice_list[i].deleteLater()
+        self.page1_choice_list = []
 
         j = 0
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.tab2_choice_list.append(spacer)
-        self.tab2_choices_layout.addItem(spacer, int(j/4), j%4)
+        self.page1_choice_list.append(spacer)
+        self.page1_choices_layout.addItem(spacer, int(j/4), j%4)
         for choice in list_choice:
             for i in range(choice[2]):
                 j += 1
-                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.tab2)
+                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.page1)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
                     QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-                self.tab2_choices_layout.addWidget(label, int(j/4), j%4)
-                self.tab2_choice_list.append(label)
+                self.page1_choices_layout.addWidget(label, int(j/4), j%4)
+                self.page1_choice_list.append(label)
                 j += 1
-                combo = QtGui.QComboBox(self.tab2)
+                combo = QtGui.QComboBox(self.page1)
                 combo.activated.connect(self.makeRaceChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], tools.getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
-                self.tab2_choices_layout.addWidget(combo, int(j/4), j%4)
-                self.tab2_choice_list.append(combo)
+                self.page1_choices_layout.addWidget(combo, int(j/4), j%4)
+                self.page1_choice_list.append(combo)
 
         if j < 3:
             j += 1
             spacer1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-            self.tab2_choice_list.append(spacer1)
-            self.tab2_choices_layout.addItem(spacer1, int(j/4), j%4)
+            self.page1_choice_list.append(spacer1)
+            self.page1_choices_layout.addItem(spacer1, int(j/4), j%4)
 
 
     def makeRaceChoice(self, useless):
         """ Update the list of choice in the character's race
         """
         choice = []
-        for i in range(len(self.tab2_choice_list)):
+        for i in range(len(self.page1_choice_list)):
             if i%2 == 0 and i!=0:
-                choice.append(str(self.tab2_choice_list[i].currentText()))
+                choice.append(str(self.page1_choice_list[i].currentText()))
                 
         self.character.race.choice = choice
             
@@ -430,25 +276,25 @@ class CharacterGenerator(object):
         """ Action that will be done when the user change the class
         :param str dnd_class: class in the combo box
         """
-        self.tab3_class_description.setText(self.class_parser.getDescription(dnd_class))
+        self.page2_class_description.setText(self.class_parser.getDescription(dnd_class))
         self.updateSpecialization()
         self.character.dnd_class.class_name = dnd_class
 
     def updateSpecialization(self):
         """ Update the list of specialization
         """
-        dnd_class = self.tab3_class_combo.currentText()
-        self.tab3_specialization_combo.clear()
+        dnd_class = self.page2_class_combo.currentText()
+        self.page2_specialization_combo.clear()
         for i in self.class_parser.getListSpecialization(dnd_class):
-            self.tab3_specialization_combo.addItem(i)
-        self.changeSpecialization(self.tab3_specialization_combo.currentText())
+            self.page2_specialization_combo.addItem(i)
+        self.changeSpecialization(self.page2_specialization_combo.currentText())
         
     def changeSpecialization(self, specialization):
         """ Action that will be done when the user change the specialization
         :param str specialization: specialization selected
         """
-        dnd_class = self.tab3_class_combo.currentText()
-        self.tab3_specialization_description.setText(
+        dnd_class = self.page2_class_combo.currentText()
+        self.page2_specialization_description.setText(
             self.class_parser.getSpecializationDescription(dnd_class, specialization))
         self.changeClassTabChoice()
         self.character.dnd_class.specialization_name = specialization
@@ -456,8 +302,8 @@ class CharacterGenerator(object):
     def changeClassTabChoice(self):
         """ Update the class choice widgets
         """
-        dnd_class = self.tab3_class_combo.currentText()
-        specialization = self.tab3_specialization_combo.currentText()
+        dnd_class = self.page2_class_combo.currentText()
+        specialization = self.page2_specialization_combo.currentText()
         list_choice = self.class_parser.getChoice(dnd_class)
         list_choice.extend(self.class_parser.getSpecializationChoice(dnd_class, specialization))
         sizePolicy = QtGui.QSizePolicy(
@@ -465,48 +311,48 @@ class CharacterGenerator(object):
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
 
-        for i in range(len(self.tab3_choice_list)):
-            if (i == 0) or (i == len(self.tab3_choice_list)-1):
-                self.tab3_choices_layout.removeItem(self.tab3_choice_list[i])
+        for i in range(len(self.page2_choice_list)):
+            if (i == 0) or (i == len(self.page2_choice_list)-1):
+                self.page2_choices_layout.removeItem(self.page2_choice_list[i])
             else:
-                self.tab3_choices_layout.removeWidget(self.tab3_choice_list[i])
-                self.tab3_choice_list[i].deleteLater()
+                self.page2_choices_layout.removeWidget(self.page2_choice_list[i])
+                self.page2_choice_list[i].deleteLater()
 
-        self.tab3_choice_list = []
+        self.page2_choice_list = []
 
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-        self.tab3_choice_list.append(spacer)
-        self.tab3_choices_layout.addItem(spacer)
+        self.page2_choice_list.append(spacer)
+        self.page2_choices_layout.addItem(spacer)
         j = 0
         for choice in list_choice:
             for i in range(choice[2]):
                 j += 1
-                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.tab3)
+                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.page2)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
                     QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-                self.tab3_choices_layout.addWidget(label, j, 0)
-                self.tab3_choice_list.append(label)
-                combo = QtGui.QComboBox(self.tab3)
+                self.page2_choices_layout.addWidget(label, j, 0)
+                self.page2_choice_list.append(label)
+                combo = QtGui.QComboBox(self.page2)
                 combo.activated[str].connect(self.makeClassChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], tools.getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
-                self.tab3_choices_layout.addWidget(combo, j, 1)
-                self.tab3_choice_list.append(combo)
+                self.page2_choices_layout.addWidget(combo, j, 1)
+                self.page2_choice_list.append(combo)
 
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-        self.tab3_choice_list.append(spacer)
-        self.tab3_choices_layout.addItem(spacer)
+        self.page2_choice_list.append(spacer)
+        self.page2_choices_layout.addItem(spacer)
 
     def makeClassChoice(self, useless):
         """ Update the list of choice in the character's background
         """
         choice = []
-        for i in range(len(self.tab3_choice_list)):
+        for i in range(len(self.page2_choice_list)):
             if i%2 == 0 and i!=0:
-                choice.append(str(self.tab3_choice_list[i].currentText()))
+                choice.append(str(self.page2_choice_list[i].currentText()))
                 
         self.character.dnd_class.choice = choice
 
@@ -516,18 +362,18 @@ class CharacterGenerator(object):
         """ action that will be done when the user change the background
         :param str background: New background
         """
-        self.tab5_ideal_combo.clear()
-        self.tab5_background_description.setText(
+        self.page3_ideal_combo.clear()
+        self.page3_background_description.setText(
             self.background_parser.getDescription(background))
         perso_max = self.background_parser.getNumberPersonality(background)
-        self.tab5_personality_spinbox_1.setMaximum(perso_max)
-        self.tab5_personality_spinbox_2.setMaximum(perso_max)
+        self.page3_personality_spinbox_1.setMaximum(perso_max)
+        self.page3_personality_spinbox_2.setMaximum(perso_max)
         flaw_max = self.background_parser.getNumberFlaw(background)
-        self.tab5_flaw_spinbox.setMaximum(flaw_max)
+        self.page3_flaw_spinbox.setMaximum(flaw_max)
         bond_max = self.background_parser.getNumberBond(background)
-        self.tab5_bond_spinbox.setMaximum(bond_max)
+        self.page3_bond_spinbox.setMaximum(bond_max)
         for ideal in self.background_parser.getListIdeal(background):
-            self.tab5_ideal_combo.addItem(ideal)
+            self.page3_ideal_combo.addItem(ideal)
         self.changeBackgroundChoice(background)
         self.character.background.setBackgroundName(background)
 
@@ -536,8 +382,8 @@ class CharacterGenerator(object):
         """ Update the text of the ideal
         :param str ideal: New Ideal
         """
-        background = self.tab5_background_combo.currentText()
-        self.tab5_ideal_description.setText(
+        background = self.page3_background_combo.currentText()
+        self.page3_ideal_description.setText(
             self.background_parser.getIdealDescription(background, ideal))
         self.character.background.setIdeal(ideal)
 
@@ -545,11 +391,11 @@ class CharacterGenerator(object):
         """ Update the description text of the personality
         :param personality: Not used (present due to Qt)
         """
-        background = self.tab5_background_combo.currentText()
-        perso1 = self.tab5_personality_spinbox_1.value()
-        perso2 = self.tab5_personality_spinbox_2.value()
+        background = self.page3_background_combo.currentText()
+        perso1 = self.page3_personality_spinbox_1.value()
+        perso2 = self.page3_personality_spinbox_2.value()
         if perso1 == perso2:
-            self.tab5_personality_description.setText(
+            self.page3_personality_description.setText(
                 "Please choose two different personalities!")
             return
         self.character.background.setPersonality0(perso1)
@@ -559,7 +405,7 @@ class CharacterGenerator(object):
         perso2 = self.background_parser.getPersonalityDescription(
             background, perso2)
         text = "<p>" + perso1 + "</p> <p>" + perso2 + "</p>"
-        self.tab5_personality_description.setText(text)
+        self.page3_personality_description.setText(text)
 
     def changeBackgroundChoice(self, background):
         """ Update the background choice widgets
@@ -571,46 +417,46 @@ class CharacterGenerator(object):
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
 
-        for i in range(len(self.tab5_choice_list)):
+        for i in range(len(self.page3_choice_list)):
             # delete spacer
             if i%3 == 0:
-                self.horizontalLayout_33.removeItem(self.tab5_choice_list[i])
+                self.horizontalLayout_33.removeItem(self.page3_choice_list[i])
             # delete widget
             else:
-                self.horizontalLayout_33.removeWidget(self.tab5_choice_list[i])
-                self.tab5_choice_list[i].deleteLater()
+                self.horizontalLayout_33.removeWidget(self.page3_choice_list[i])
+                self.page3_choice_list[i].deleteLater()
                 
-        self.tab5_choice_list = []
+        self.page3_choice_list = []
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.tab5_choice_list.append(spacer)
+        self.page3_choice_list.append(spacer)
         self.horizontalLayout_33.addItem(spacer)
         for choice in list_choice:
             for i in range(choice[2]):
-                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.tab5_choice_layout)
+                label = QtGui.QLabel(tools.choiceLabel(choice[0]), self.page3_choice_layout)
                 label.setSizePolicy(sizePolicy)
                 label.setAlignment(
                     QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
                 self.horizontalLayout_33.addWidget(label)
-                self.tab5_choice_list.append(label)
-                combo = QtGui.QComboBox(self.tab5_choice_layout)
+                self.page3_choice_list.append(label)
+                combo = QtGui.QComboBox(self.page3_choice_layout)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], tools.getLanguages())
                 for i in choice[1]:
                     combo.addItem(i)
                 combo.activated[str].connect(self.makeBackgroundChoice)
                 self.horizontalLayout_33.addWidget(combo)
-                self.tab5_choice_list.append(combo)
+                self.page3_choice_list.append(combo)
                 spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-                self.tab5_choice_list.append(spacer)
+                self.page3_choice_list.append(spacer)
                 self.horizontalLayout_33.addItem(spacer)
 
     def makeBackgroundChoice(self, useless):
         """ Update the list of choice in the character's background
         """
         choice = []
-        for i in range(len(self.tab5_choice_list)):
+        for i in range(len(self.page3_choice_list)):
             if i%3 == 2:
-                choice.append(str(self.tab5_choice_list[i].currentText()))
+                choice.append(str(self.page3_choice_list[i].currentText()))
                 
         self.character.background.choice = choice
         
@@ -618,8 +464,8 @@ class CharacterGenerator(object):
         """ Update the description of the flaw
         :param int flaw: value of the flaw
         """
-        background = self.tab5_background_combo.currentText()
-        self.tab5_flaw_description.setText(
+        background = self.page3_background_combo.currentText()
+        self.page3_flaw_description.setText(
             self.background_parser.getFlawDescription(background, flaw))
         self.character.background.setFlaw(flaw)
 
@@ -627,8 +473,8 @@ class CharacterGenerator(object):
         """ Update the description of the bond
         :param int bond: value of the bond
         """
-        background = self.tab5_background_combo.currentText()
-        self.tab5_bond_description.setText(
+        background = self.page3_background_combo.currentText()
+        self.page3_bond_description.setText(
             self.background_parser.getBondDescription(background, bond))
         self.character.background.setBond(bond)
         
@@ -637,9 +483,9 @@ class CharacterGenerator(object):
         and flaw of the character
         """
         nber_background = len(self.background_parser.getListBackground())
-        self.tab5_background_combo.setCurrentIndex(
+        self.page3_background_combo.setCurrentIndex(
             tools.rollDice(1, nber_background) - 1)
-        background = self.tab5_background_combo.currentText()
+        background = self.page3_background_combo.currentText()
         self.changeBackground(background)
         self.randomPersonality()
 
@@ -647,50 +493,61 @@ class CharacterGenerator(object):
         """ Choose the personality of the character (bond, flaw, ideal,
         personality)
         """
-        background = self.tab5_background_combo.currentText()
+        background = self.page3_background_combo.currentText()
         nber_perso = self.background_parser.getNumberPersonality(background)
         nber_flaw = self.background_parser.getNumberFlaw(background)
         nber_bond = self.background_parser.getNumberBond(background)
         nber_ideal = len(self.background_parser.getListIdeal(background))
         # bond
-        self.tab5_bond_spinbox.setValue(tools.rollDice(1, nber_bond))
+        self.page3_bond_spinbox.setValue(tools.rollDice(1, nber_bond))
         # flaw
-        self.tab5_flaw_spinbox.setValue(tools.rollDice(1, nber_flaw))
+        self.page3_flaw_spinbox.setValue(tools.rollDice(1, nber_flaw))
         # personality
         roll1 = tools.rollDice(1, nber_perso)
-        self.tab5_personality_spinbox_1.setValue(roll1)
+        self.page3_personality_spinbox_1.setValue(roll1)
         roll2 = tools.rollDice(1, nber_perso - 1)
         if roll2 >= roll1:
             roll2 += 1
-        self.tab5_personality_spinbox_2.setValue(roll2)
+        self.page3_personality_spinbox_2.setValue(roll2)
         # ideal
-        self.tab5_ideal_combo.setCurrentIndex(tools.rollDice(1, nber_ideal)-1)
-        ideal = self.tab5_ideal_combo.currentText()
+        self.page3_ideal_combo.setCurrentIndex(tools.rollDice(1, nber_ideal)-1)
+        ideal = self.page3_ideal_combo.currentText()
         self.changeIdealDescription(ideal)
 
         # alignment
         align = self.background_parser.getIdealAlignement(background, ideal)
         if lower(align) == 'any':
-            self.tab5_alignment_combo.setCurrentIndex(tools.rollDice(1,9)-1)
+            self.page3_alignment_combo.setCurrentIndex(tools.rollDice(1,9)-1)
         else:
             index_align = []
             for i in range(9):
-                if lower(align) in lower(str(self.tab5_alignment_combo.itemText(i))):
+                if lower(align) in lower(str(self.page3_alignment_combo.itemText(i))):
                     index_align.append(i)
             roll = tools.rollDice(1,len(index_align))-1
-            self.tab5_alignment_combo.setCurrentIndex(index_align[roll])
+            self.page3_alignment_combo.setCurrentIndex(index_align[roll])
         self.character.background.setAlignment(
-            self.tab5_alignment_combo.currentText())
+            self.page3_alignment_combo.currentText())
         
     # --------------------------- GUI ---------------------------------                    
         
         
     def setupNotes(self):
-        self.tab7 = QtGui.QWidget()
-        self.tab7.setObjectName(_fromUtf8("tab7"))
-        self.horizontalLayout_21 = QtGui.QHBoxLayout(self.tab7)
-        self.horizontalLayout_21.setObjectName(_fromUtf8("horizontalLayout_21"))
-        self.tab7_notes = QtGui.QPlainTextEdit(self.tab7)
-        self.tab7_notes.setObjectName(_fromUtf8("tab7_notes"))
-        self.horizontalLayout_21.addWidget(self.tab7_notes)
-        self.main_tab.addTab(self.tab7, "Notes")
+        self.page4 = QtGui.QWizardPage()
+        self.page4.setObjectName(tools._fromUtf8("page4"))
+
+        self.page4_main_layout = QtGui.QHBoxLayout(self.page4)
+        self.page4_main_layout.setObjectName(tools._fromUtf8("page4_main_layout"))
+
+        self.page4_groupbox = QtGui.QGroupBox("Notes", self.page4)
+        self.page4_groupbox.setObjectName(tools._fromUtf8("Notes"))
+        self.page4_main_layout.addWidget(self.page4_groupbox)
+        
+        self.page4_layout = QtGui.QHBoxLayout(self.page4_groupbox)
+        self.page4_layout.setObjectName(tools._fromUtf8("page4_layout"))
+
+        self.page4_notes = QtGui.QTextEdit(self.page4_groupbox)
+        self.page4_notes.setObjectName(tools._fromUtf8("page4_notes"))
+        
+        self.page4_layout.addWidget(self.page4_notes)
+
+        return self.page4

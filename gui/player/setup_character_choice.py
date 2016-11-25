@@ -9,15 +9,13 @@ except AttributeError:
 
 def setupCharacterChoice(self):
     # create tab
-    self.tab0 = QtGui.QWidget()
-    self.tab0.setObjectName(_fromUtf8("tab0"))
-    self.horizontalLayout_2 = QtGui.QHBoxLayout(self.tab0)
+    self.horizontalLayout_2 = QtGui.QHBoxLayout(self.centralwidget)
     self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
 
     # create character choice tree
     self.tab0_character_choice_layout = QtGui.QVBoxLayout()
     self.tab0_character_choice_layout.setObjectName(_fromUtf8("tab0_character_choice_layout"))
-    self.tab0_character_choice = QtGui.QListWidget(self.tab0)
+    self.tab0_character_choice = QtGui.QListWidget(self.centralwidget)
     self.tab0_character_choice.currentRowChanged.connect(self.printSummary)
     self.tab0_character_choice.setSortingEnabled(False)
     sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -33,11 +31,11 @@ def setupCharacterChoice(self):
     # create buttons
     self.tab0_button_layout = QtGui.QHBoxLayout()
     self.tab0_button_layout.setObjectName(_fromUtf8("tab0_button_layout"))
-    self.tab0_new_character = QtGui.QPushButton("New Character", self.tab0)
+    self.tab0_new_character = QtGui.QPushButton("New Character", self.centralwidget)
     self.tab0_new_character.clicked.connect(self.newCharacter)
     self.tab0_new_character.setObjectName(_fromUtf8("tab0_new_character"))
     self.tab0_button_layout.addWidget(self.tab0_new_character)
-    self.tab0_choose_current = QtGui.QPushButton("Choose Current Character", self.tab0)
+    self.tab0_choose_current = QtGui.QPushButton("Choose Current Character", self.centralwidget)
     self.tab0_choose_current.setObjectName(_fromUtf8("tab0_choose_current"))
     self.tab0_choose_current.clicked.connect(self.loadCharacter)
     self.tab0_button_layout.addWidget(self.tab0_choose_current)
@@ -45,7 +43,7 @@ def setupCharacterChoice(self):
 
     # create summary part
     self.horizontalLayout_2.addLayout(self.tab0_character_choice_layout)
-    self.tab0_summary_layout = QtGui.QGroupBox("Summary", self.tab0)
+    self.tab0_summary_layout = QtGui.QGroupBox("Summary", self.centralwidget)
     sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
     sizePolicy.setHorizontalStretch(0)
     sizePolicy.setVerticalStretch(0)
@@ -202,7 +200,5 @@ def setupCharacterChoice(self):
     self.horizontalLayout_42.addWidget(self.tab0_object_proficiency_layout)
     self.verticalLayout_17.addWidget(self.tab0_proficiencies_layout)
     self.horizontalLayout_2.addWidget(self.tab0_summary_layout)
-    self.main_tab.addTab(self.tab0, "Character Choice")
 
-    self.main_tab.currentChanged.connect(self.loadListCharacters)
     self.loadListCharacters()
