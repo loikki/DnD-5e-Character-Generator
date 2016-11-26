@@ -45,26 +45,30 @@ class CharacterGenerator(object):
         self.wizard.addPage(setupClass(self))
         self.wizard.addPage(setupBackground(self))
         self.wizard.addPage(self.setupNotes())
+        
 
+        self.wizard.accepted.connect(self.saveCharacter)
         self.wizard.show()
 
     # ------------------ ACTION ---------------------------------------
     
     # tool bar
     def saveCharacter(self):
+        if not self.character.getProficiency()[1]:
+            print 'bouh'
         pickle.dump(self.character, open(
             os.path.join("data", "saved", "player", self.character.name + ".p"), 'wb'))
         
     # description tab
     def importImage(self):
-        openfile = QtGui.QFileDialog.getOpenFileName(self.centralwidget) # Filename line
-        self.tab1_img.setPixmap(QtGui.QPixmap(openfile))
-        f = open(openfile, 'r') # New line
-        self.character.image = f.read() # New line
+        openfile = QtGui.QFileDialog.getOpenFileName(self.wizard) # Filename line
+        self.page0_img.setPixmap(QtGui.QPixmap(openfile))
+        f = open(openfile, 'r')
+        self.character.image = f.read()
 
     def removeImage(self):
         self.character.image = None
-        self.tab1_img.clear()
+        self.page0_img.clear()
 
         
     # --------------- DESCRIPTION FUNCTIONS -------------------------------
@@ -72,72 +76,71 @@ class CharacterGenerator(object):
     def rollAbilities(self):
         """ Roll 6 times 4d6 and remove the lowest one
         """
-        if self.tab1_ability_style_combo.currentText() != 'Random':
+        if self.page0_ability_style_combo.currentText() != 'Random':
             return
         roll = tools.rollAbility()
-        self.tab1_ability_value_1.setText(str(roll))
+        self.page0_ability_value_1.setText(str(roll))
         roll = tools.rollAbility()
-        self.tab1_ability_value_2.setText(str(roll))
+        self.page0_ability_value_2.setText(str(roll))
         roll = tools.rollAbility()
-        self.tab1_ability_value_3.setText(str(roll))
+        self.page0_ability_value_3.setText(str(roll))
         roll = tools.rollAbility()
-        self.tab1_ability_value_4.setText(str(roll))
+        self.page0_ability_value_4.setText(str(roll))
         roll = tools.rollAbility()
-        self.tab1_ability_value_5.setText(str(roll))
+        self.page0_ability_value_5.setText(str(roll))
         roll = tools.rollAbility()
-        self.tab1_ability_value_6.setText(str(roll))
-        self.character.dnd_class.getProficiency(None)
+        self.page0_ability_value_6.setText(str(roll))
         self.character.write()
 
     def changeRollStyle(self, style):
-        self.tab1_ability_value_1.clear()
-        self.tab1_ability_value_2.clear()
-        self.tab1_ability_value_3.clear()
-        self.tab1_ability_value_4.clear()
-        self.tab1_ability_value_5.clear()
-        self.tab1_ability_value_6.clear()
-        self.tab1_ability_point_score.clear()
+        self.page0_ability_value_1.clear()
+        self.page0_ability_value_2.clear()
+        self.page0_ability_value_3.clear()
+        self.page0_ability_value_4.clear()
+        self.page0_ability_value_5.clear()
+        self.page0_ability_value_6.clear()
+        self.page0_ability_point_score.clear()
         if style == 'Free' or style == 'Points':
-            self.tab1_ability_value_1.setReadOnly(False)
-            self.tab1_ability_value_2.setReadOnly(False)
-            self.tab1_ability_value_3.setReadOnly(False)
-            self.tab1_ability_value_4.setReadOnly(False)
-            self.tab1_ability_value_5.setReadOnly(False)
-            self.tab1_ability_value_6.setReadOnly(False)
+            self.page0_ability_value_1.setReadOnly(False)
+            self.page0_ability_value_2.setReadOnly(False)
+            self.page0_ability_value_3.setReadOnly(False)
+            self.page0_ability_value_4.setReadOnly(False)
+            self.page0_ability_value_5.setReadOnly(False)
+            self.page0_ability_value_6.setReadOnly(False)
         else:
-            self.tab1_ability_value_1.setReadOnly(True)
-            self.tab1_ability_value_2.setReadOnly(True)
-            self.tab1_ability_value_3.setReadOnly(True)
-            self.tab1_ability_value_4.setReadOnly(True)
-            self.tab1_ability_value_5.setReadOnly(True)
-            self.tab1_ability_value_6.setReadOnly(True)
+            self.page0_ability_value_1.setReadOnly(True)
+            self.page0_ability_value_2.setReadOnly(True)
+            self.page0_ability_value_3.setReadOnly(True)
+            self.page0_ability_value_4.setReadOnly(True)
+            self.page0_ability_value_5.setReadOnly(True)
+            self.page0_ability_value_6.setReadOnly(True)
         if  style == 'Pregenerated':
-            self.tab1_ability_value_1.setText("15")
-            self.tab1_ability_value_2.setText("14")
-            self.tab1_ability_value_3.setText("13")
-            self.tab1_ability_value_4.setText("12")
-            self.tab1_ability_value_5.setText("10")
-            self.tab1_ability_value_6.setText("8")
+            self.page0_ability_value_1.setText("15")
+            self.page0_ability_value_2.setText("14")
+            self.page0_ability_value_3.setText("13")
+            self.page0_ability_value_4.setText("12")
+            self.page0_ability_value_5.setText("10")
+            self.page0_ability_value_6.setText("8")
         elif style == 'Points':
-            self.tab1_ability_value_1.setText("8")
-            self.tab1_ability_value_2.setText("8")
-            self.tab1_ability_value_3.setText("8")
-            self.tab1_ability_value_4.setText("8")
-            self.tab1_ability_value_5.setText("8")
-            self.tab1_ability_value_6.setText("8")
+            self.page0_ability_value_1.setText("8")
+            self.page0_ability_value_2.setText("8")
+            self.page0_ability_value_3.setText("8")
+            self.page0_ability_value_4.setText("8")
+            self.page0_ability_value_5.setText("8")
+            self.page0_ability_value_6.setText("8")
         
 
     def notableFeaturesChanged(self):
-        features = self.tab1_features.toPlainText()
+        features = self.page0_features.toPlainText()
         self.character.notable_features = features
 
     def changeAbilityRoll(self):
-        self.tab1_ability_point_score.clear()
-        if self.tab1_ability_style_combo.currentText() == 'Points':
+        self.page0_ability_point_score.clear()
+        if self.page0_ability_style_combo.currentText() == 'Points':
             points = 0
-            list_ability_value = [self.tab1_ability_value_1, self.tab1_ability_value_2,
-                                  self.tab1_ability_value_3, self.tab1_ability_value_4,
-                                  self.tab1_ability_value_5, self.tab1_ability_value_6]
+            list_ability_value = [self.page0_ability_value_1, self.page0_ability_value_2,
+                                  self.page0_ability_value_3, self.page0_ability_value_4,
+                                  self.page0_ability_value_5, self.page0_ability_value_6]
             for value in list_ability_value:
                 if value.text() == '':
                     return
@@ -158,19 +161,19 @@ class CharacterGenerator(object):
                     points += 7
                 elif temp == 15:
                     points += 9
-            self.tab1_ability_point_score.setText(str(points) + "/27 Points Used")
-        list_ability = [self.tab1_str_combo, self.tab1_dex_combo, self.tab1_con_combo,
-                        self.tab1_int_combo, self.tab1_wis_combo, self.tab1_cha_combo]
+            self.page0_ability_point_score.setText(str(points) + "/27 Points Used")
+        list_ability = [self.page0_str_combo, self.page0_dex_combo, self.page0_con_combo,
+                        self.page0_int_combo, self.page0_wis_combo, self.page0_cha_combo]
         for combo in list_ability:
             combo.clear()
         self.changeAttributionAbility(None)
 
     def changeAttributionAbility(self, not_used):
-        list_ability = [self.tab1_str_combo, self.tab1_dex_combo, self.tab1_con_combo,
-                        self.tab1_int_combo, self.tab1_wis_combo, self.tab1_cha_combo]
-        list_value = [self.tab1_ability_value_1.text(), self.tab1_ability_value_2.text(),
-                      self.tab1_ability_value_3.text(), self.tab1_ability_value_4.text(),
-                      self.tab1_ability_value_5.text(), self.tab1_ability_value_6.text()]
+        list_ability = [self.page0_str_combo, self.page0_dex_combo, self.page0_con_combo,
+                        self.page0_int_combo, self.page0_wis_combo, self.page0_cha_combo]
+        list_value = [self.page0_ability_value_1.text(), self.page0_ability_value_2.text(),
+                      self.page0_ability_value_3.text(), self.page0_ability_value_4.text(),
+                      self.page0_ability_value_5.text(), self.page0_ability_value_6.text()]
         for combo in list_ability:
             if combo.currentText() != '':
                 list_value.remove(combo.currentText())
@@ -257,6 +260,8 @@ class CharacterGenerator(object):
             spacer1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
             self.page1_choice_list.append(spacer1)
             self.page1_choices_layout.addItem(spacer1, int(j/4), j%4)
+
+        self.makeRaceChoice(None)
 
 
     def makeRaceChoice(self, useless):
@@ -345,6 +350,7 @@ class CharacterGenerator(object):
         spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         self.page2_choice_list.append(spacer)
         self.page2_choices_layout.addItem(spacer)
+        self.makeClassChoice(None)
 
     def makeClassChoice(self, useless):
         """ Update the list of choice in the character's background
@@ -449,6 +455,8 @@ class CharacterGenerator(object):
                 spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
                 self.page3_choice_list.append(spacer)
                 self.horizontalLayout_33.addItem(spacer)
+
+        self.makeBackgroundChoice(None)
 
     def makeBackgroundChoice(self, useless):
         """ Update the list of choice in the character's background

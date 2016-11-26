@@ -57,10 +57,14 @@ class Character:
 
 
     def getProficiency(self):
-        prof = self.race.getProficiency()
-        prof = self.dnd_class.getProficiency(proficiency=prof)
-        prof = self.background.getProficiency(proficiency=prof)
-        return prof
+        prof, diff = self.race.getProficiency()
+        prof, temp = self.dnd_class.getProficiency(proficiency=prof)
+        if not temp:
+            diff = temp
+        prof, temp = self.background.getProficiency(proficiency=prof)
+        if not temp:
+            diff = temp
+        return prof, diff
 
     # Strength
         

@@ -65,11 +65,11 @@ def createObjectProficiencyLabel(self, list_prof, enum_prof, current_index=0):
         if list_prof[i]:
             label = QtGui.QLabel(
                 choiceLabel(enum_prof(i).name),
-                self.tab0_object_proficiency_layout)
+                self.object_proficiency_layout)
             label.setAlignment(QtCore.Qt.AlignCenter)
             self.gridLayout_16.addWidget(
                 label, int(current_index/2), current_index%2)
-            self.tab0_list_object.append(label)
+            self.list_object.append(label)
             current_index += 1
     return current_index
 

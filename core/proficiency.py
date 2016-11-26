@@ -9,51 +9,78 @@ def getLocalProficiency(parser, proficiency):
     """
     :param ElementTreeObject parser: Parser
     :param Proficiency proficiency: object where to add proficiencies
-    :returns: Completed ObjectProficiency
+    :returns: Completed ObjectProficiency, different
     """
+    diff = True
     for i in parser.findall("saving_throw"):
         name = toProficiencyName(i.get('name'))
-        proficiency.addSavingProficiency(name)        
+        temp = proficiency.addSavingProficiency(name)
+        if not temp:
+            diff = False
     for i in parser.findall("skill"):
         name = toProficiencyName(i.get('name'))
-        proficiency.addSkillProficiency(name)
+        temp = proficiency.addSkillProficiency(name)
+        if not temp:
+            diff = False
     for i in parser.findall("weapon"):
         name = toProficiencyName(i.get('name'))
-        proficiency.addWeaponProficiency(name)
+        temp = proficiency.addWeaponProficiency(name)
+        if not temp:
+            diff = False
     for i in parser.findall("armor"):
         name = toProficiencyName(i.get('name'))
-        proficiency.addArmorProficiency(name)
+        temp = proficiency.addArmorProficiency(name)
+        if not temp:
+            diff = False
     for i in parser.findall("tool"):
         name = toProficiencyName(i.get('name'))
-        proficiency.addToolProficiency(name)
+        temp = proficiency.addToolProficiency(name)
+        if not temp:
+            diff = False
     for i in parser.findall("language"):
         name = toProficiencyName(i.get('name'))
-        proficiency.addLanguageProficiency(name)
+        temp = proficiency.addLanguageProficiency(name)
+        if not temp:
+            diff = False
 
-    return proficiency
+    return proficiency, diff
 
 def getChoiceProficiency(proficiency, value, choice):
     """
     :param Proficiency proficiency: object where to add proficiencies
     :param tuple value: (tag, choice, number of choice)
     :param [str] choice: list of choosen values (size given by number of choice)
+    :returns: proficiencies, different
     """
+    diff = True
     if value[2] != len(choice):
         raise Exception("Number of choice not respected")
     for i in choice:
         if value[0] == 'saving_throw':
-            proficiency.addSavingProficiency(lower(str(i)))
+            temp = proficiency.addSavingProficiency(lower(str(i)))
+            if not temp:
+                diff = False
         if value[0] == 'language':
-            proficiency.addLanguageProficiency(lower(str(i)))
+            temp = proficiency.addLanguageProficiency(lower(str(i)))
+            if not temp:
+                diff = False
         elif value[0] == 'skill':
-            proficiency.addSkillProficiency(lower(str(i)))
+            temp = proficiency.addSkillProficiency(lower(str(i)))
+            if not temp:
+                diff = False
         elif value[0] == 'weapon':
-            proficiency.addWeaponProficiency(lower(str(i)))
+            temp = proficiency.addWeaponProficiency(lower(str(i)))
+            if not temp:
+                diff = False
         elif value[0] == 'armor':
-            proficiency.addArmorProficiency(lower(str(i)))
+            temp = proficiency.addArmorProficiency(lower(str(i)))
+            if not temp:
+                diff = False
         elif value[0] == 'tool':
-            proficiency.addToolProficiency(lower(str(i)))
-    return proficiency
+            temp = proficiency.addToolProficiency(lower(str(i)))
+            if not temp:
+                diff = False
+    return proficiency, diff
 
 class Ability(Enum):
     strength = 0
@@ -213,32 +240,62 @@ class Proficiency():
 
     def addLanguageProficiency(self, prof):
         prof = LanguageProficiency[prof]
+        diff = True
+        if self.languages[prof.value]:
+            diff = False
         self.languages[prof.value] = True
+        return diff
 
     def addSavingProficiency(self, prof):
         prof = Ability[prof]
+        diff = True
+        if self.saving[prof.value]:
+            diff = False
         self.saving[prof.value] = True
+        return diff
     
     def addSkillProficiency(self, prof):
         prof = SkillProficiency[prof]
+        diff = True
+        if self.skills[prof.value]:
+            diff = False
         self.skills[prof.value] = True
+        return diff
         
     def addWeaponProficiency(self, prof):
+        diff = True
         if prof == "simple":
+            for i in self.weapons[0:15]:
+                if i:
+                    diff = False
             self.weapons[0:15] = True
         elif prof == "martial":
+            for i in self.weapons[0:15]:
+                if i:
+                    diff = False
             self.weapons[15:0] = True
         else:
             prof = WeaponProficiency[prof]
+            if self.weapons[prof.value]:
+                diff = False
             self.weapons[prof.value] = True
+        return diff
 
     def addArmorProficiency(self, prof):
         prof = ArmorProficiency[prof]
+        diff = True
+        if self.armor[prof.value]:
+            diff = False
         self.armors[prof.value] = True
+        return diff
 
     def addToolProficiency(self, prof):
         prof = ToolProficiency[prof]
+        diff = True
+        if self.tools[prof.value]:
+            diff = False
         self.tools[prof.value] = True
+        return diff
 
     def write(self):
         print "Saving Throws:\n"

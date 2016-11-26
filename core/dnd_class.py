@@ -119,7 +119,7 @@ class DnDClass:
         print "Class: ", self.class_name
         print "Specialization: ", self.specialization_name
         print "Proficiency: "
-        self.getProficiency(None).write()
+        self.getProficiency(None)[0].write()
 
 
     def getProficiency(self, parser=None, proficiency=None):
@@ -133,14 +133,16 @@ class DnDClass:
 
         dndclass = parser.getClass(self.class_name)
         prof = dndclass.find('proficiency')
-        proficiency = pfy.getLocalProficiency(prof, proficiency)
+        proficiency, diff = pfy.getLocalProficiency(prof, proficiency)
 
         if len(self.choice) > 0:
             choice = parser.getChoice(self.class_name)
             i = 0
             for value in choice:
-                proficiency = pfy.getChoiceProficiency(
+                proficiency, temp = pfy.getChoiceProficiency(
                     proficiency, value, self.choice[i:i+value[2]])
+                if not temp:
+                    diff = temp
                 i += value[2]
 
-        return proficiency
+        return proficiency, diff

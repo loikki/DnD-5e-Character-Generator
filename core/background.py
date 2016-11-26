@@ -163,14 +163,16 @@ class Background():
 
         background = parser.getBackground(self.background_name)
         prof = background.find('proficiency')
-        proficiency = pfy.getLocalProficiency(prof, proficiency)
+        proficiency, diff = pfy.getLocalProficiency(prof, proficiency)
 
         if len(self.choice) > 0:
             choice = parser.getChoice(self.background_name)
             i = 0
             for value in choice:
-                proficiency = pfy.getChoiceProficiency(
+                proficiency, temp = pfy.getChoiceProficiency(
                     proficiency, value, self.choice[i:i+value[2]])
+                if not temp:
+                    diff = temp
                 i += value[2]
 
-        return proficiency
+        return proficiency, diff

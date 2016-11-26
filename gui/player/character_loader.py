@@ -28,7 +28,7 @@ class CharacterLoader(object):
         self.generator.setupUi()
         
     def loadCharacter(self):
-        character = self.tab0_character_choice.currentItem().text()
+        character = self.character_choice.currentItem().text()
         for c in self.list_character:
             if character == c.name:
                 character = c
@@ -44,76 +44,86 @@ class CharacterLoader(object):
         for character_file in os.listdir(character_directory):
             self.list_character.append(pickle.load(
                 open(character_directory + character_file, 'rb')))
-        self.tab0_character_choice.clear()
+        self.character_choice.clear()
         for character in self.list_character:
-            self.tab0_character_choice.addItem(character.name)
+            self.character_choice.addItem(character.name)
 
     def printSummary(self):
-        character = self.tab0_character_choice.currentItem().text()
+        character = self.character_choice.currentItem().text()
         for c in self.list_character:
             if character == c.name:
                 character = c
                 break
 
-        self.tab0_raceLineEdit.setText(character.race.subrace_name)
-        self.tab0_classLineEdit.setText(character.dnd_class.class_name)
-        self.tab0_specializationLineEdit.setText(
+        self.raceLineEdit.setText(character.race.subrace_name)
+        self.classLineEdit.setText(character.dnd_class.class_name)
+        self.specializationLineEdit.setText(
             character.dnd_class.specialization_name)
-        self.tab0_backgroundLineEdit.setText(
+        self.backgroundLineEdit.setText(
             character.background.background_name)
-        self.tab0_experienceLevelLineEdit.setText(
+        self.experienceLevelLineEdit.setText(
             str(character.experience))
-        self.tab0_str_value.setText(str(character.getStrength()))
-        self.tab0_dex_value.setText(str(character.getDexterity()))
-        self.tab0_con_value.setText(str(character.getConstitution()))
-        self.tab0_int_value.setText(str(character.getIntelligence()))
-        self.tab0_wis_value.setText(str(character.getWisdom()))
-        self.tab0_cha_value.setText(str(character.getCharisma()))
+        pixmap = QtGui.QPixmap()
+        if c.image is not None:
+            pixmap.loadFromData(c.image)
+        max_size = 150
+        if pixmap.height() > pixmap.width():
+            pixmap = pixmap.scaledToHeight(max_size)
+        else:
+            pixmap = pixmap.scaledToWidth(max_size)
+        self.img.setPixmap(pixmap)
+        self.str_value.setText(str(character.getStrength()))
+        self.dex_value.setText(str(character.getDexterity()))
+        self.con_value.setText(str(character.getConstitution()))
+        self.int_value.setText(str(character.getIntelligence()))
+        self.wis_value.setText(str(character.getWisdom()))
+        self.cha_value.setText(str(character.getCharisma()))
         character.background.getProficiency(None)
         self.loadProficiency(character)
 
 
     def loadProficiency(self, character):
-        for i in range(len(self.tab0_list_skill)):
-            self.gridLayout_15.removeWidget(self.tab0_list_skill[i])
-            self.tab0_list_skill[i].deleteLater()
+        for i in range(len(self.list_skill)):
+            self.gridLayout_15.removeWidget(self.list_skill[i])
+            self.list_skill[i].deleteLater()
 
-        self.tab0_list_skill = []
+        self.list_skill = []
         # skills
-        prof = character.getProficiency()
+        prof, diff = character.getProficiency()
+        print diff
         skills = prof.skills
         j = 0
         for i in range(len(skills)):
             if skills[i]:
                 label = QtGui.QLabel(
                     tools.choiceLabel(proficiency.SkillProficiency(i).name),
-                    self.tab0_skill_layout)
+                    self.skill_layout)
                 label.setAlignment(QtCore.Qt.AlignCenter)
                 self.gridLayout_15.addWidget(label, int(j/2), j%2)
-                self.tab0_list_skill.append(label)
+                self.list_skill.append(label)
                 j += 1
 
         # Saving
         saving = prof.saving
-        for i in range(len(self.tab0_list_saving)):
-            self.hLayout_saving.removeWidget(self.tab0_list_saving[i])
-            self.tab0_list_saving[i].deleteLater()
-        self.tab0_list_saving = []
+        for i in range(len(self.list_saving)):
+            self.hLayout_saving.removeWidget(self.list_saving[i])
+            self.list_saving[i].deleteLater()
+        self.list_saving = []
 
         for i in range(len(saving)):
             if saving[i]:
                 label = QtGui.QLabel(
                     tools.choiceLabel(proficiency.Ability(i).name),
-                    self.tab0_saving_layout)
+                    self.saving_layout)
                 label.setAlignment(QtCore.Qt.AlignCenter)
                 self.hLayout_saving.addWidget(label)
-                self.tab0_list_saving.append(label)
+                self.list_saving.append(label)
 
         # Object
-        for i in range(len(self.tab0_list_object)):
-            self.gridLayout_16.removeWidget(self.tab0_list_object[i])
-            self.tab0_list_object[i].deleteLater()
-        self.tab0_list_object = []
+        for i in range(len(self.list_object)):
+            self.gridLayout_16.removeWidget(self.list_object[i])
+            self.list_object[i].deleteLater()
+        self.list_object = []
         weapon = prof.weapons
         j = tools.createObjectProficiencyLabel(
             self, weapon, proficiency.WeaponProficiency)
@@ -124,5 +134,21 @@ class CharacterLoader(object):
         j = tools.createObjectProficiencyLabel(
             self, armor, proficiency.ArmorProficiency, j)   
 
-        # TODO add groupBox for languages
+        # Languages
+        for i in range(len(self.list_lang)):
+            self.lang_gridLayout.removeWidget(self.list_lang[i])
+            self.list_lang[i].deleteLater()
+
+        self.list_lang = []
+        
         lang = prof.languages
+        j = 0
+        for i in range(len(lang)):
+            if skills[i]:
+                label = QtGui.QLabel(
+                    tools.choiceLabel(proficiency.LanguageProficiency(i).name),
+                    self.lang_proficiency_layout)
+                label.setAlignment(QtCore.Qt.AlignCenter)
+                self.lang_gridLayout.addWidget(label, int(j/2), j%2)
+                self.list_lang.append(label)
+                j += 1
