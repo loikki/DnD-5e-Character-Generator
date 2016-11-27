@@ -25,7 +25,7 @@ class CharacterLoader(object):
 
     def newCharacter(self):
         self.generator = CharacterGenerator()
-        self.generator.setupUi()
+        self.generator.setupUi(self)
         
     def loadCharacter(self):
         character = self.character_choice.currentItem().text()
@@ -35,7 +35,18 @@ class CharacterLoader(object):
                 break
         self.character = character
 
+    def deleteCharacter(self):
+        character = str(self.character_choice.currentItem().text())
+        question = "Do you really want to delete " + character + "?"
+        response = QtGui.QMessageBox.question(
+            self.centralwidget, 'Message',
+            question, QtGui.QMessageBox.Yes | 
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
+        if response == QtGui.QMessageBox.Yes:
+            os.remove(os.path.join("data", "saved", "player", character + ".p"))
+        self.loadListCharacters()
+        
     # --------------- Character Choice ------------------------------------
 
     def loadListCharacters(self):
@@ -49,7 +60,11 @@ class CharacterLoader(object):
             self.character_choice.addItem(character.name)
 
     def printSummary(self):
-        character = self.character_choice.currentItem().text()
+        character = self.character_choice.currentItem()
+        if character is None:
+            return
+        character = character.text()
+        
         for c in self.list_character:
             if character == c.name:
                 character = c
@@ -63,15 +78,17 @@ class CharacterLoader(object):
             character.background.background_name)
         self.experienceLevelLineEdit.setText(
             str(character.experience))
-        pixmap = QtGui.QPixmap()
         if c.image is not None:
+            pixmap = QtGui.QPixmap()
             pixmap.loadFromData(c.image)
-        max_size = 150
-        if pixmap.height() > pixmap.width():
-            pixmap = pixmap.scaledToHeight(max_size)
+            max_size = 150
+            if pixmap.height() > pixmap.width():
+                pixmap = pixmap.scaledToHeight(max_size)
+            else:
+                pixmap = pixmap.scaledToWidth(max_size)
+                self.img.setPixmap(pixmap)
         else:
-            pixmap = pixmap.scaledToWidth(max_size)
-        self.img.setPixmap(pixmap)
+            self.img.clear()
         self.str_value.setText(str(character.getStrength()))
         self.dex_value.setText(str(character.getDexterity()))
         self.con_value.setText(str(character.getConstitution()))

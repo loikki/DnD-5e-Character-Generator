@@ -35,10 +35,15 @@ def setupCharacterChoice(self):
     self.new_character.clicked.connect(self.newCharacter)
     self.new_character.setObjectName(_fromUtf8("new_character"))
     self.button_layout.addWidget(self.new_character)
-    self.choose_current = QtGui.QPushButton("Choose Current Character", self.centralwidget)
+    self.choose_current = QtGui.QPushButton("Load Character", self.centralwidget)
     self.choose_current.setObjectName(_fromUtf8("choose_current"))
     self.choose_current.clicked.connect(self.loadCharacter)
     self.button_layout.addWidget(self.choose_current)
+    self.delete_character = QtGui.QPushButton("Delete Character", self.centralwidget)
+    self.delete_character.setObjectName(_fromUtf8("delete_character"))
+    self.delete_character.clicked.connect(self.deleteCharacter)
+    self.button_layout.addWidget(self.delete_character)
+
     self.character_choice_layout.addLayout(self.button_layout)
 
     # create summary part

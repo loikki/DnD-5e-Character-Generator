@@ -322,3 +322,38 @@ class Proficiency():
         for i in range(len(self.languages)):
             if self.languages[i]:
                 print LanguageProficiency(i).name.title()
+
+    def getProficiency(self):
+        prof = {}
+        prof["Saving Throws"] = []
+        for i in range(len(self.saving)):
+            if self.saving[i]:
+                prof["Saving Throws"].append(
+                    Ability(i).name.title())
+        prof["Skills"] = []
+        for i in range(len(self.skills)):
+            if self.skills[i]:
+                prof["Skills"].append(
+                    SkillProficiency(i).name.title())
+        prof["Weapons"] = []
+        for i in range(len(self.weapons)):
+            if self.weapons[i]:
+                prof["Weapons"].append(
+                    WeaponProficiency(i).name.title())
+        prof["Armors"] = []
+        for i in range(len(self.armors)):
+            if self.armors[i]:
+                prof["Armors"].append(
+                    ArmorProficiency(i).name.title())
+        prof["Tools"] = []
+        for i in range(len(self.tools)):
+            if self.tools[i]:
+                prof["Tools"].append(
+                    ToolProficiency(i).name.title())
+        prof["Languages"] = []
+        for i in range(len(self.languages)):
+            if self.languages[i]:
+                prof["Languages"].append(
+                    LanguageProficiency(i).name.title())
+
+        return prof

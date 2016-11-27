@@ -95,7 +95,7 @@ def setupBackground(self):
     self.page3_alignment_combo.addItem("Lawful Evil")
     self.page3_alignment_combo.addItem("Neutral Evil")
     self.page3_alignment_combo.addItem("Chaotic Evil")
-    self.page3_alignment_combo.activated[str].connect(self.character.background.setAlignment)
+    self.page3_alignment_combo.activated[str].connect(self.wizard.character.background.setAlignment)
     self.page3_ideal_choice_layout.addWidget(self.page3_alignment_combo)
     self.horizontalLayout_13.addLayout(self.page3_ideal_choice_layout)
     self.page3_ideal_description = QtGui.QTextBrowser(self.page3_ideal_layout)

@@ -24,16 +24,40 @@ from gui.player.setup_background import setupBackground
 from gui.player.setup_race import setupRace
 from gui.player.setup_class import setupClass
 
+class CharacterGeneratorWizard(QtGui.QWizard):
+    def __init__(self):
+        super(QtGui.QWizard, self).__init__()
+        self.character = character.Character()
+        
+    def validateCurrentPage(self):
+        if self.currentPage().isFinalPage():
+            if not self.character.getProficiency()[1]:
+                prof = self.character.dnd_class.getProficiency()[0]
+                prof = self.character.background.getProficiency(None, prof)[0]
+                prof = self.character.race.getProficiency(None, prof)[0]
+                dict_prof = prof.getProficiency()
+                question = """You have choosen twice the same
+proficiency, please modify them:\n """
+                for i in dict_prof.keys():
+                    question += "\n" + i + ":\n "
+                    for j in dict_prof[i]:
+                        question += j + "\n "
+                QtGui.QMessageBox.question(
+                    self, 'Message',
+                    question, QtGui.QMessageBox.Ok,
+                    QtGui.QMessageBox.Ok)
+                return False
+        return True
 
 class CharacterGenerator(object):
-    def setupUi(self):
-        self.wizard = QtGui.QWizard()
+    def setupUi(self, mainWindow):
+        self.mainWindow = mainWindow
+        self.wizard = CharacterGeneratorWizard()
         self.wizard.setObjectName(tools._fromUtf8("Character Generator"))
         self.wizard.resize(1005, 719)
         self.wizard.setWindowTitle("Character Generator")
 
         # by default, no character is loaded
-        self.character = character.Character()
         self.background_parser = background.BackgroundParser()
         self.race_parser = race.RaceParser()
         self.class_parser = dnd_class.DnDClassParser()
@@ -54,20 +78,21 @@ class CharacterGenerator(object):
     
     # tool bar
     def saveCharacter(self):
-        if not self.character.getProficiency()[1]:
+        if not self.wizard.character.getProficiency()[1]:
             print 'bouh'
-        pickle.dump(self.character, open(
-            os.path.join("data", "saved", "player", self.character.name + ".p"), 'wb'))
+        pickle.dump(self.wizard.character, open(
+            os.path.join("data", "saved", "player", self.character.wizard.name + ".p"), 'wb'))
+        self.mainWindow.loadListCharacters()
         
     # description tab
     def importImage(self):
         openfile = QtGui.QFileDialog.getOpenFileName(self.wizard) # Filename line
         self.page0_img.setPixmap(QtGui.QPixmap(openfile))
         f = open(openfile, 'r')
-        self.character.image = f.read()
+        self.wizard.character.image = f.read()
 
     def removeImage(self):
-        self.character.image = None
+        self.wizard.character.image = None
         self.page0_img.clear()
 
         
@@ -90,7 +115,7 @@ class CharacterGenerator(object):
         self.page0_ability_value_5.setText(str(roll))
         roll = tools.rollAbility()
         self.page0_ability_value_6.setText(str(roll))
-        self.character.write()
+        self.wizard.character.write()
 
     def changeRollStyle(self, style):
         self.page0_ability_value_1.clear()
@@ -132,7 +157,7 @@ class CharacterGenerator(object):
 
     def notableFeaturesChanged(self):
         features = self.page0_features.toPlainText()
-        self.character.notable_features = features
+        self.wizard.character.notable_features = features
 
     def changeAbilityRoll(self):
         self.page0_ability_point_score.clear()
@@ -192,7 +217,7 @@ class CharacterGenerator(object):
         """
         self.page1_race_description.setText(self.race_parser.getDescription(race))
         self.updateSubrace()
-        self.character.race.setRace(race)
+        self.wizard.character.race.setRace(race)
 
     def updateSubrace(self):
         """ Update the list of subrace
@@ -208,7 +233,7 @@ class CharacterGenerator(object):
         self.page1_subrace_description.setText(
             self.race_parser.getSubraceDescription(race, subrace))
         self.changeRaceTabChoice()
-        self.character.race.setSubrace(subrace)
+        self.wizard.character.race.setSubrace(subrace)
 
     def changeRaceTabChoice(self):
         """ Update the race choice widgets
@@ -272,7 +297,7 @@ class CharacterGenerator(object):
             if i%2 == 0 and i!=0:
                 choice.append(str(self.page1_choice_list[i].currentText()))
                 
-        self.character.race.choice = choice
+        self.wizard.character.race.choice = choice
             
 
     # --------------- CLASS FUNCTIONS --------------------------------------
@@ -283,7 +308,7 @@ class CharacterGenerator(object):
         """
         self.page2_class_description.setText(self.class_parser.getDescription(dnd_class))
         self.updateSpecialization()
-        self.character.dnd_class.class_name = dnd_class
+        self.wizard.character.dnd_class.class_name = dnd_class
 
     def updateSpecialization(self):
         """ Update the list of specialization
@@ -302,7 +327,7 @@ class CharacterGenerator(object):
         self.page2_specialization_description.setText(
             self.class_parser.getSpecializationDescription(dnd_class, specialization))
         self.changeClassTabChoice()
-        self.character.dnd_class.specialization_name = specialization
+        self.wizard.character.dnd_class.specialization_name = specialization
 
     def changeClassTabChoice(self):
         """ Update the class choice widgets
@@ -360,7 +385,7 @@ class CharacterGenerator(object):
             if i%2 == 0 and i!=0:
                 choice.append(str(self.page2_choice_list[i].currentText()))
                 
-        self.character.dnd_class.choice = choice
+        self.wizard.character.dnd_class.choice = choice
 
     # --------------- BACKGROUND FUNCTIONS ---------------------------------
         
@@ -381,7 +406,7 @@ class CharacterGenerator(object):
         for ideal in self.background_parser.getListIdeal(background):
             self.page3_ideal_combo.addItem(ideal)
         self.changeBackgroundChoice(background)
-        self.character.background.setBackgroundName(background)
+        self.wizard.character.background.setBackgroundName(background)
 
         
     def changeIdealDescription(self, ideal):
@@ -391,7 +416,7 @@ class CharacterGenerator(object):
         background = self.page3_background_combo.currentText()
         self.page3_ideal_description.setText(
             self.background_parser.getIdealDescription(background, ideal))
-        self.character.background.setIdeal(ideal)
+        self.wizard.character.background.setIdeal(ideal)
 
     def changePersonalityDescription(self, personality):
         """ Update the description text of the personality
@@ -404,8 +429,8 @@ class CharacterGenerator(object):
             self.page3_personality_description.setText(
                 "Please choose two different personalities!")
             return
-        self.character.background.setPersonality0(perso1)
-        self.character.background.setPersonality1(perso2)
+        self.wizard.character.background.setPersonality0(perso1)
+        self.wizard.character.background.setPersonality1(perso2)
         perso1 = self.background_parser.getPersonalityDescription(
             background, perso1)
         perso2 = self.background_parser.getPersonalityDescription(
@@ -466,7 +491,7 @@ class CharacterGenerator(object):
             if i%3 == 2:
                 choice.append(str(self.page3_choice_list[i].currentText()))
                 
-        self.character.background.choice = choice
+        self.wizard.character.background.choice = choice
         
     def changeFlawDescription(self, flaw):
         """ Update the description of the flaw
@@ -475,7 +500,7 @@ class CharacterGenerator(object):
         background = self.page3_background_combo.currentText()
         self.page3_flaw_description.setText(
             self.background_parser.getFlawDescription(background, flaw))
-        self.character.background.setFlaw(flaw)
+        self.wizard.character.background.setFlaw(flaw)
 
     def changeBondDescription(self, bond):
         """ Update the description of the bond
@@ -484,7 +509,7 @@ class CharacterGenerator(object):
         background = self.page3_background_combo.currentText()
         self.page3_bond_description.setText(
             self.background_parser.getBondDescription(background, bond))
-        self.character.background.setBond(bond)
+        self.wizard.character.background.setBond(bond)
         
     def fullRandomBackground(self):
         """ Choose randomly the background, personality, ideal, bond
@@ -533,7 +558,7 @@ class CharacterGenerator(object):
                     index_align.append(i)
             roll = tools.rollDice(1,len(index_align))-1
             self.page3_alignment_combo.setCurrentIndex(index_align[roll])
-        self.character.background.setAlignment(
+        self.wizard.character.background.setAlignment(
             self.page3_alignment_combo.currentText())
         
     # --------------------------- GUI ---------------------------------                    
