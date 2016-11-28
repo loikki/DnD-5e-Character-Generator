@@ -150,7 +150,7 @@ class Background():
         print "Choice: ", self.choice
 
         print "Proficiency: "
-        self.getProficiency(None).write()
+        self.getProficiency(None)[0].write()
 
     def getProficiency(self, parser=None, proficiency=None):
         """

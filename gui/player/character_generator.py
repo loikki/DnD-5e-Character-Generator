@@ -81,7 +81,7 @@ class CharacterGenerator(object):
         if not self.wizard.character.getProficiency()[1]:
             print 'bouh'
         pickle.dump(self.wizard.character, open(
-            os.path.join("data", "saved", "player", self.character.wizard.name + ".p"), 'wb'))
+            os.path.join("data", "saved", "player", self.wizard.character.name + ".p"), 'wb'))
         self.mainWindow.loadListCharacters()
         
     # description tab
