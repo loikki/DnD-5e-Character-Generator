@@ -7,6 +7,7 @@ import core.proficiency as proficiency
 import gui.player.tools as tools
 from gui.player.setup_character_choice import setupCharacterChoice
 from gui.player.character_generator import CharacterGenerator
+from gui.player.character_play import CharacterPlay
 
 
 class CharacterLoader(object):
@@ -20,6 +21,8 @@ class CharacterLoader(object):
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(tools._fromUtf8("centralwidget"))
         MainWindow.setCentralWidget(self.centralwidget)
+
+        self.loaded_characters = []
         
         setupCharacterChoice(self)
 
@@ -33,7 +36,10 @@ class CharacterLoader(object):
             if character == c.name:
                 character = c
                 break
-        self.character = character
+        char_play = CharacterPlay()
+        char_play.setupUi(character)
+        char_play.show()
+        self.loaded_characters.append(char_play)
 
     def deleteCharacter(self):
         character = str(self.character_choice.currentItem().text())
@@ -107,7 +113,6 @@ class CharacterLoader(object):
         self.list_skill = []
         # skills
         prof, diff = character.getProficiency()
-        print diff
         skills = prof.skills
         j = 0
         for i in range(len(skills)):

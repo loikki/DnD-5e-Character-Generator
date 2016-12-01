@@ -8,6 +8,14 @@ class DnDClassParser:
         self.class_file = join('data', 'dnd', 'class.xml')
         self.root = ET.parse(self.class_file).getroot()
 
+    def getHitDice(self, dnd_class):
+        child = self.getClass(dnd_class)
+        return int(child.find('hit_dice').text)
+
+    def getInitHitPoint(self, dnd_class):
+        child = self.getClass(dnd_class)
+        return int(child.find('hit_point').text)
+
     def getClass(self, dnd_class):
         """ give the element structure of the required class
         :param str dnd_class: Name of the class
@@ -114,6 +122,10 @@ class DnDClass:
         self.class_name = None
         self.specialization_name = None
         self.choice = []
+        self.hit_point = None
+        self.max_hit_point = None
+        self.hit_dice = 1
+        self.parser = DnDClassParser()
 
     def write(self):
         print "Class: ", self.class_name
@@ -146,3 +158,15 @@ class DnDClass:
                 i += value[2]
 
         return proficiency, diff
+
+    def setHitPoint(self):
+        self.max_hit_point = self.parser.getInitHitPoint(
+            self.class_name)
+        self.hit_point = self.max_hit_point
+
+
+    def getHitDice(self):
+        hit_dice = [None]*2
+        hit_dice[0] = self.hit_dice
+        hit_dice[1] = self.parser.getHitDice(self.class_name)
+        return hit_dice

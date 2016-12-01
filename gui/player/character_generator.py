@@ -78,8 +78,7 @@ class CharacterGenerator(object):
     
     # tool bar
     def saveCharacter(self):
-        if not self.wizard.character.getProficiency()[1]:
-            print 'bouh'
+        self.wizard.character.setHitPoint()
         pickle.dump(self.wizard.character, open(
             os.path.join("data", "saved", "player", self.wizard.character.name + ".p"), 'wb'))
         self.mainWindow.loadListCharacters()

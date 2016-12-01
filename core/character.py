@@ -55,6 +55,43 @@ class Character:
         self.notable_features = None
         self.image = None
 
+    def heal(self, value, dice):
+        hit, max_hit = self.getHitPoint()
+        self.dnd_class.hit_dice -= dice
+        if hit + value <= max_hit:
+            self.dnd_class.hit_point += value
+        else:
+            self.dnd_class.hit_point = max_hit
+
+    def getHitDice(self):
+        hit_dice = [None]*3
+        hit_dice[0], hit_dice[2] = self.dnd_class.getHitDice()
+        hit_dice[1] = getLevel(self.experience)
+        return hit_dice
+
+    def addHitDice(self, new_hit_dice):
+        cur, max_hit, temp = self.getHitDice()
+        if cur + new_hit_dice <= max_hit:
+            self.dnd_class.hit_dice += new_hit_dice
+        else:
+            self.dnd_class.hit_dice = max_hit
+        
+    def setHitPoint(self):
+        """ Set the initial hit points
+        """
+        self.dnd_class.setHitPoint()
+        self.dnd_class.hit_point += getLevel(
+            self.experience)*getModifier(self.getConstitution())
+        
+    def getHitPoint(self):
+        """
+        :returns: (current, max)
+        """
+        max_hit = self.dnd_class.max_hit_point
+        # take into account the constitution modifiers
+        max_hit += getLevel(self.experience)*getModifier(
+            self.getConstitution())
+        return self.dnd_class.hit_point, max_hit
 
     def getProficiency(self):
         prof, diff = self.race.getProficiency()
