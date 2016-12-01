@@ -1,6 +1,8 @@
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, QtNetwork
 from string import lower
 from math import ceil
+import socket   #for sockets
+import sys  #for exit
 
 import gui.player.tools as tools
 import core.spell as spell
@@ -11,6 +13,7 @@ import core.character as character
 from gui.player.setup_stat import setupStat
 from gui.player.setup_spell import setupSpell
 from gui.player.setup_trait import setupTrait
+from core.network.client import TCPClient
 
 def abilityString(ability):
     mod = character.getModifier(ability)
@@ -38,6 +41,15 @@ class CharacterPlay(QtGui.QWidget):
         setupTrait(self)
         self.updateCharacter()
         self.updateStatList()
+
+        ip_address, ok = QtGui.QInputDialog.getText(
+            self, 'Connection to the DM', 
+            'IP address of the DM:')
+
+        if not ok or ip_address == '':
+            return
+        
+        self.socket = TCPClient(self, ip_address)
 
     def updateCharacter(self):
         # Strength
@@ -119,6 +131,10 @@ class CharacterPlay(QtGui.QWidget):
         dialog = HealDialog(self)
         hit, dice = dialog.setupUi()
         self.character.heal(hit, dice)
+        self.updateCharacter()
+
+    def takeDamage(self, value):
+        self.character.dnd_class.hit_point -= value
         self.updateCharacter()
 
     # --------------------------- SPELL -------------------------------
