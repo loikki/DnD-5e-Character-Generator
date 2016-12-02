@@ -92,7 +92,7 @@ class CharacterLoader(object):
                 pixmap = pixmap.scaledToHeight(max_size)
             else:
                 pixmap = pixmap.scaledToWidth(max_size)
-                self.img.setPixmap(pixmap)
+            self.img.setPixmap(pixmap)
         else:
             self.img.clear()
         self.str_value.setText(str(character.getStrength()))

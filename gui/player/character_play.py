@@ -1,10 +1,11 @@
 from PyQt4 import QtGui, QtCore, QtNetwork
 from string import lower
 from math import ceil
-import socket   #for sockets
-import sys  #for exit
+import pickle
+import os
 
 import gui.player.tools as tools
+import gui.player.dialogs as dialogs
 import core.spell as spell
 import core.trait as trait
 import core.race as race
@@ -51,6 +52,25 @@ class CharacterPlay(QtGui.QWidget):
         
         self.socket = TCPClient(self, ip_address)
 
+    def closeEvent(self, event):
+        reply = QtGui.QMessageBox.question(self, 'Save',
+                    "Do you want to save your character?",
+                    QtGui.QMessageBox.Yes | 
+                    QtGui.QMessageBox.No |
+                    QtGui.QMessageBox.Cancel,
+                    QtGui.QMessageBox.No)
+
+        if reply == QtGui.QMessageBox.Yes:
+            pickle.dump(self.character, open(os.path.join(
+                "data", "saved", "player",
+                self.character.name + ".p"), 'wb'))
+
+        
+        if reply == QtGui.QMessageBox.Cancel:
+            event.ignore()
+        else:
+            event.accept()
+        
     def updateCharacter(self):
         # Strength
         ab = self.character.getStrength()
@@ -128,14 +148,27 @@ class CharacterPlay(QtGui.QWidget):
         self.updateCharacter()
 
     def heal(self):
-        dialog = HealDialog(self)
+        dialog = dialogs.HealDialog(self)
         hit, dice = dialog.setupUi()
         self.character.heal(hit, dice)
         self.updateCharacter()
 
     def takeDamage(self, value):
         self.character.dnd_class.hit_point -= value
+        QtGui.QMessageBox.information(self, "Damage",
+            "You just received " + str(value) + " damage!")
         self.updateCharacter()
+        if self.character.dnd_class.hit_point < 1:
+            dialog = dialogs.DeathDialog(self)
+            dead, healed = dialog.setupUi()
+            if dead:
+                QtGui.QMessageBox.information(
+                    self, "Game Over", "You are dead!")
+            else:
+                QtGui.QMessageBox.information(self,
+                    "Not Game Over", "Come back, you are still alive!")
+                if healed:
+                    self.character.dnd_class.hit_point = 1
 
     # --------------------------- SPELL -------------------------------
 
@@ -317,45 +350,3 @@ class CharacterPlay(QtGui.QWidget):
             return
         description = self.trait_parser.getDescription(value.text(0))
         self.tab2_description.setText(description)
-
-
-
-class HealDialog(QtGui.QDialog):
-    def setupUi(self):
-        self.setWindowTitle("Heal")
-
-        self.layout = QtGui.QVBoxLayout(self)
-        self.l1 = QtGui.QLabel("Number of hit dice to use:", self)
-        self.c1 = QtGui.QComboBox(self)
-        for i in range(self.parent().character.getHitDice()[0] + 1):
-            self.c1.addItem(str(i))
-        self.form = QtGui.QFormLayout()
-        self.layout.addLayout(self.form)
-        self.form.addRow(self.l1, self.c1)
-
-        self.l2 = QtGui.QLabel("Hit Point Healed:", self)
-        self.le1 = QtGui.QLineEdit("", self)
-        self.form.addRow(self.l2, self.le1)
-        self.button = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
-            QtCore.Qt.Horizontal, self)
-        roll_button = QtGui.QPushButton("Roll", self)
-        self.button.addButton(
-            roll_button, QtGui.QDialogButtonBox.ActionRole)
-
-        roll_button.clicked.connect(self.roll)
-        self.button.accepted.connect(self.accept)
-        self.button.rejected.connect(self.reject)
-        self.layout.addWidget(self.button)
-
-        self.exec_()
-        if self.le1.text() == '':
-            self.le1.setText('0')
-        return int(self.le1.text()), int(self.c1.currentText())
-
-    def roll(self):
-        hit_dice = self.parent().character.getHitDice()
-        roll_value = tools.rollDice(
-            int(self.c1.currentText()), hit_dice[2])
-        self.le1.setText(str(roll_value))
-        self.accept()
