@@ -1,6 +1,6 @@
 from PyQt4 import QtGui
 
-import gui.player.tools as tools
+import gui.tools as tools
 
 def setupTrait(self):
     # Trait
@@ -18,7 +18,7 @@ def setupTrait(self):
     self.horizontalLayout_40.addWidget(self.tab2_description)
     self.main_tab.addTab(self.tab2, "Trait")
     updateTrait(self)
-
+    self.tab2_tree.currentItemChanged.connect(self.updateTraitDescription)
 
 def updateTrait(self):
         race = self.character.race.race_name

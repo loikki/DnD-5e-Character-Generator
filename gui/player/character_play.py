@@ -4,18 +4,19 @@ from math import ceil
 import pickle
 import os
 
-import gui.player.tools as tools
+import gui.tools as tools
 import gui.player.dialogs as dialogs
 import core.spell as spell
 import core.trait as trait
 import core.race as race
 import core.dnd_class as dnd_class
 import core.character as character
+
+from core.network.client import TCPClient
 from gui.player.setup_stat import setupStat
 from gui.player.setup_spell import setupSpell
 from gui.player.setup_trait import setupTrait
-from core.network.client import TCPClient
-
+            
 def abilityString(ability):
     mod = character.getModifier(ability)
     if mod > 0:
@@ -47,10 +48,9 @@ class CharacterPlay(QtGui.QWidget):
             self, 'Connection to the DM', 
             'IP address of the DM:')
 
-        if not ok or ip_address == '':
-            return
+        if ok and ip_address != '':
+            self.socket = TCPClient(self, ip_address)
         
-        self.socket = TCPClient(self, ip_address)
 
     def closeEvent(self, event):
         reply = QtGui.QMessageBox.question(self, 'Save',

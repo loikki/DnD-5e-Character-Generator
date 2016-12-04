@@ -17,7 +17,7 @@ import core.dnd_class as dnd_class
 import core.character as character
 import core.proficiency as proficiency
 
-import gui.player.tools as tools
+import gui.tools as tools
 
 from gui.player.setup_description import setupDescription
 from gui.player.setup_background import setupBackground

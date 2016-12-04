@@ -1,7 +1,7 @@
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 import numpy as np
 
-import gui.player.tools as tools
+import gui.tools as tools
 
 class HealDialog(QtGui.QDialog):
     def setupUi(self):

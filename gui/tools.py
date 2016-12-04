@@ -56,20 +56,29 @@ def getLanguages(allow_exotic=False):
     return languages
 
 
-def createObjectProficiencyLabel(self, list_prof, enum_prof, current_index=0):
+def createObjectProficiencyLabel(self, list_prof, enum_prof, current_index=0, parent='loader'):
     """
     :param list list_prof: Proficiency list from the class Proficiency
     :param Enum enum_prof: Enum proficiency class
     """
+    if parent == 'loader':
+        grid = self.gridLayout_16
+        object_layout = self.object_proficiency_layout
+        list_object = self.list_object
+    elif parent == 'play':
+        grid = self.object_gridLayout
+        object_layout = self.tab0_object_layout
+        list_object = self.tab0_list_object
+        
     for i in range(len(list_prof)):
         if list_prof[i]:
             label = QtGui.QLabel(
                 choiceLabel(enum_prof(i).name),
-                self.object_proficiency_layout)
+                object_layout)
             label.setAlignment(QtCore.Qt.AlignCenter)
-            self.gridLayout_16.addWidget(
+            grid.addWidget(
                 label, int(current_index/2), current_index%2)
-            self.list_object.append(label)
+            list_object.append(label)
             current_index += 1
     return current_index
 

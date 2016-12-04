@@ -4,7 +4,7 @@ import pickle
 
 import core.proficiency as proficiency
 
-import gui.player.tools as tools
+import gui.tools as tools
 from gui.player.setup_character_choice import setupCharacterChoice
 from gui.player.character_generator import CharacterGenerator
 from gui.player.character_play import CharacterPlay
@@ -21,8 +21,6 @@ class CharacterLoader(object):
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(tools._fromUtf8("centralwidget"))
         MainWindow.setCentralWidget(self.centralwidget)
-
-        self.loaded_characters = []
         
         setupCharacterChoice(self)
 
@@ -36,10 +34,9 @@ class CharacterLoader(object):
             if character == c.name:
                 character = c
                 break
-        char_play = CharacterPlay()
-        char_play.setupUi(character)
-        char_play.show()
-        self.loaded_characters.append(char_play)
+        self.char_play = CharacterPlay()
+        self.char_play.setupUi(character)
+        self.char_play.show()
 
     def deleteCharacter(self):
         character = str(self.character_choice.currentItem().text())
@@ -166,7 +163,7 @@ class CharacterLoader(object):
         lang = prof.languages
         j = 0
         for i in range(len(lang)):
-            if skills[i]:
+            if lang[i]:
                 label = QtGui.QLabel(
                     tools.choiceLabel(proficiency.LanguageProficiency(i).name),
                     self.lang_proficiency_layout)

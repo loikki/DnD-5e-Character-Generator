@@ -1,5 +1,9 @@
 from PyQt4 import QtCore, QtGui
 
+import core.proficiency as proficiency
+import gui.tools as tools
+
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -140,9 +144,10 @@ def setupStat(self):
     self.tab0_cha_value.setObjectName(_fromUtf8("tab0_cha_value"))
     self.tab0_abilities_sub_layout.addWidget(self.tab0_cha_value, 1, 2, 1, 1)
     self.gridLayout_5.addLayout(self.tab0_abilities_sub_layout, 1, 0, 1, 1)
+    self.tab0_abilities_proficiencies_layout.addWidget(self.tab0_abilities_layout)
 
     # proficiencies
-    self.tab0_abilities_proficiencies_layout.addWidget(self.tab0_abilities_layout)
+    
     self.tab0_proficiencies_layout = QtGui.QGroupBox("Proficiencies", self.tab0)
     sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
     sizePolicy.setHorizontalStretch(0)
@@ -150,76 +155,50 @@ def setupStat(self):
     sizePolicy.setHeightForWidth(self.tab0_proficiencies_layout.sizePolicy().hasHeightForWidth())
     self.tab0_proficiencies_layout.setSizePolicy(sizePolicy)
     self.tab0_proficiencies_layout.setObjectName(_fromUtf8("tab0_proficiencies_layout"))
+
+    # saving throw
     self.gridLayout_11 = QtGui.QGridLayout(self.tab0_proficiencies_layout)
     self.gridLayout_11.setObjectName(_fromUtf8("gridLayout_11"))
     self.tab0_saving_layout = QtGui.QGroupBox("Saving Throws", self.tab0_proficiencies_layout)
-    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
-    sizePolicy.setHorizontalStretch(0)
-    sizePolicy.setVerticalStretch(0)
-    sizePolicy.setHeightForWidth(self.tab0_saving_layout.sizePolicy().hasHeightForWidth())
     self.tab0_saving_layout.setSizePolicy(sizePolicy)
     self.tab0_saving_layout.setObjectName(_fromUtf8("tab0_saving_layout"))
     self.gridLayout_12 = QtGui.QGridLayout(self.tab0_saving_layout)
     self.gridLayout_12.setObjectName(_fromUtf8("gridLayout_12"))
-    self.tab0_saving_1_label = QtGui.QLabel("Dexterity", self.tab0_saving_layout)
-    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
-    sizePolicy.setHorizontalStretch(0)
-    sizePolicy.setVerticalStretch(0)
-    sizePolicy.setHeightForWidth(self.tab0_saving_1_label.sizePolicy().hasHeightForWidth())
-    self.tab0_saving_1_label.setSizePolicy(sizePolicy)
-    self.tab0_saving_1_label.setMinimumSize(QtCore.QSize(20, 0))
-    self.tab0_saving_1_label.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_saving_1_label.setObjectName(_fromUtf8("tab0_saving_1_label"))
-    self.gridLayout_12.addWidget(self.tab0_saving_1_label, 0, 0, 1, 1)
-    self.tab0_saving_2_label = QtGui.QLabel("Intelligence", self.tab0_saving_layout)
-    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
-    sizePolicy.setHorizontalStretch(0)
-    sizePolicy.setVerticalStretch(0)
-    sizePolicy.setHeightForWidth(self.tab0_saving_2_label.sizePolicy().hasHeightForWidth())
-    self.tab0_saving_2_label.setSizePolicy(sizePolicy)
-    self.tab0_saving_2_label.setMinimumSize(QtCore.QSize(20, 0))
-    self.tab0_saving_2_label.setAlignment(QtCore.Qt.AlignCenter)
-    self.tab0_saving_2_label.setObjectName(_fromUtf8("tab0_saving_2_label"))
-    self.gridLayout_12.addWidget(self.tab0_saving_2_label, 0, 1, 1, 1)
+    self.tab0_list_saving = []    
     self.gridLayout_11.addWidget(self.tab0_saving_layout, 0, 0, 1, 1)
+
     # skills
+    self.tab0_list_skill = []
     self.tab0_skill_layout = QtGui.QGroupBox("Skills", self.tab0_proficiencies_layout)
-    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
-    sizePolicy.setHorizontalStretch(0)
-    sizePolicy.setVerticalStretch(0)
-    sizePolicy.setHeightForWidth(self.tab0_skill_layout.sizePolicy().hasHeightForWidth())
     self.tab0_skill_layout.setSizePolicy(sizePolicy)
     self.tab0_skill_layout.setObjectName(_fromUtf8("tab0_skill_layout"))
     self.gridLayout_13 = QtGui.QGridLayout(self.tab0_skill_layout)
     self.gridLayout_13.setObjectName(_fromUtf8("gridLayout_13"))
-    self.tab0_skill3 = QtGui.QLabel("Insight (Wisdom +2)", self.tab0_skill_layout)
-    self.tab0_skill3.setObjectName(_fromUtf8("tab0_skill3"))
-    self.gridLayout_13.addWidget(self.tab0_skill3, 1, 1, 1, 1)
-    self.tab0_skill2 = QtGui.QLabel("Religion (Wisdom +2)", self.tab0_skill_layout)
-    self.tab0_skill2.setObjectName(_fromUtf8("tab0_skill2"))
-    self.gridLayout_13.addWidget(self.tab0_skill2, 1, 0, 1, 1)
-    self.tab0_skill4 = QtGui.QLabel("Club (Strength +2)", self.tab0_skill_layout)
-    self.tab0_skill4.setObjectName(_fromUtf8("tab0_skill4"))
-    self.gridLayout_13.addWidget(self.tab0_skill4, 2, 0, 1, 1)
-    self.tab0_skill5 = QtGui.QLabel("Survival (Wisdom +2)", self.tab0_skill_layout)
-    self.tab0_skill5.setObjectName(_fromUtf8("tab0_skill5"))
-    self.gridLayout_13.addWidget(self.tab0_skill5, 2, 1, 1, 1)
-    self.tab0_skill6 = QtGui.QLabel("Ligth Armor", self.tab0_skill_layout)
-    self.tab0_skill6.setObjectName(_fromUtf8("tab0_skill6"))
-    self.gridLayout_13.addWidget(self.tab0_skill6, 3, 0, 1, 1)
-    self.tab0_skill7 = QtGui.QLabel("Perception (Wisdom +2)", self.tab0_skill_layout)
-    self.tab0_skill7.setObjectName(_fromUtf8("tab0_skill7"))
-    self.gridLayout_13.addWidget(self.tab0_skill7, 3, 1, 1, 1)
-    self.tab0_skill1 = QtGui.QLabel("Shortsword (Dexterity +2)", self.tab0_skill_layout)
-    self.tab0_skill1.setObjectName(_fromUtf8("tab0_skill1"))
-    self.gridLayout_13.addWidget(self.tab0_skill1, 0, 1, 1, 1)
-    self.tab0_passive_perc = QtGui.QLabel("Passive Perception (12)", self.tab0_skill_layout)
-    self.tab0_passive_perc.setObjectName(_fromUtf8("tab0_passive_perc"))
-    self.gridLayout_13.addWidget(self.tab0_passive_perc, 0, 0, 1, 1)
     self.gridLayout_11.addWidget(self.tab0_skill_layout, 1, 0, 1, 1)
     self.tab0_abilities_proficiencies_layout.addWidget(self.tab0_proficiencies_layout)
+
+    # object
+    self.tab0_list_object = []
+    self.tab0_object_layout = QtGui.QGroupBox("Objects", self.tab0_proficiencies_layout)
+    self.tab0_object_layout.setSizePolicy(sizePolicy)
+    self.tab0_object_layout.setObjectName(_fromUtf8("tab0_object_layout"))
+    self.object_gridLayout = QtGui.QGridLayout(self.tab0_object_layout)
+    self.object_gridLayout.setObjectName(_fromUtf8("object_gridLayout"))
+    self.gridLayout_11.addWidget(self.tab0_object_layout, 2, 0, 1, 1)
+
+    # language
+    self.tab0_list_language = []
+    self.tab0_language_layout = QtGui.QGroupBox("Languages", self.tab0_proficiencies_layout)
+    self.tab0_language_layout.setSizePolicy(sizePolicy)
+    self.tab0_language_layout.setObjectName(_fromUtf8("tab0_language_layout"))
+    self.lang_gridLayout = QtGui.QGridLayout(self.tab0_language_layout)
+    self.lang_gridLayout.setObjectName(_fromUtf8("lang_gridLayout"))
+    self.gridLayout_11.addWidget(self.tab0_language_layout, 3, 0, 1, 1)
+
+    loadProficiency(self)
     self.horizontalLayout_38.addLayout(self.tab0_abilities_proficiencies_layout)
 
+    
     # right part
     self.tab0_right_layout = QtGui.QGroupBox(self.tab0)
     self.tab0_right_layout.setTitle(_fromUtf8(""))
@@ -307,3 +286,56 @@ def setupStat(self):
     self.main_tab.addTab(self.tab0, "Stats")
 
     self.main_tab.currentChanged.connect(self.updateStatList)
+
+
+def loadProficiency(self):
+    # skills
+    prof, diff = self.character.getProficiency()
+    skills = prof.skills
+    j = 0
+    for i in range(len(skills)):
+        if skills[i]:
+            label = QtGui.QLabel(
+                tools.choiceLabel(proficiency.SkillProficiency(i).name),
+                self.tab0_skill_layout)
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            self.gridLayout_13.addWidget(label, int(j/2), j%2)
+            self.tab0_list_skill.append(label)
+            j += 1
+
+    # Saving
+    saving = prof.saving
+    j = 0
+    for i in range(len(saving)):
+        if saving[i]:
+            label = QtGui.QLabel(
+                tools.choiceLabel(proficiency.Ability(i).name),
+                self.tab0_saving_layout)
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            self.gridLayout_12.addWidget(label, int(j/2), j%2)
+            self.tab0_list_saving.append(label)
+            j += 1
+
+    # Object
+    weapon = prof.weapons
+    j = tools.createObjectProficiencyLabel(
+        self, weapon, proficiency.WeaponProficiency, parent='play')
+    tool = prof.tools
+    j = tools.createObjectProficiencyLabel(
+        self, tool, proficiency.ToolProficiency, j, parent='play')
+    armor = prof.armors
+    j = tools.createObjectProficiencyLabel(
+        self, armor, proficiency.ArmorProficiency, j, parent='play')
+
+    # Languages        
+    lang = prof.languages
+    j = 0
+    for i in range(len(lang)):
+        if lang[i]:
+            label = QtGui.QLabel(
+                tools.choiceLabel(proficiency.LanguageProficiency(i).name),
+                self.tab0_language_layout)
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            self.lang_gridLayout.addWidget(label, int(j/2), j%2)
+            self.tab0_list_language.append(label)
+            j += 1
