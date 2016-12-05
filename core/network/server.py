@@ -15,14 +15,32 @@ class TCPServer(QtNetwork.QTcpServer):
 
     def onNewConnection(self):
         self.list_socket.append([self.nextPendingConnection(), None])
-        self.list_socket[-1][0].readyRead.connect(self.readData)
+        self.list_socket[-1][0].readyRead.connect(lambda: self.readDataFromPlayer(self.list_socket[-1]))
         #self.serverAddress()
 
-    def readData(self):
+    def readDataFromPlayer(self, item_socket):
+        socket = item_socket[0]
+        character = item_socket[1]
+        temp = str(socket.readAll())
+        if len(temp) <= 0:
+            return
+        str_type, text = temp.split(",", 1)
+        if character is None or 'file' in str_type:
+            character = pickle.loads(text)
+        elif "heal" in str_type:
+            character.dnd_class.hit_point += int(text)
+        item_socket[1] = character
+        self.parent.updateList()
+
+    def sendDataToPlayer(self, socket, function, value):
+        character = None
+        j = 0
         for i in self.list_socket:
-            temp = str(i[0].readAll())
-            if len(temp) > 0:
-                str_type, text = temp.split(",", 1)
-                i[1] = pickle.loads(text)
+            if i[0] == socket:
+                break
+            j += 1
+        if "takeDamage" in function:
+            self.list_socket[j][1].dnd_class.hit_point -= value
+            self.list_socket[j][0].write("takeDamage, " + str(value))
 
         self.parent.updateList()

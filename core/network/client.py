@@ -26,3 +26,7 @@ class TCPClient(QtNetwork.QTcpSocket):
         character.image = None
         text = pickle.dumps(character)
         self.writeData('file,' + text)
+
+    def sendDataToDM(self, function, value):
+        if "heal" in function:
+            self.writeData('heal, ' + str(value))

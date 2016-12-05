@@ -1,21 +1,24 @@
-from PyQt4 import QtGui, QtCore, QtNetwork
-from string import lower
-from math import ceil
 import pickle
 import os
 
-import gui.tools as tools
-import gui.player.dialogs as dialogs
+from PyQt4 import QtGui, QtCore, QtNetwork
+from string import lower
+from math import ceil
+
 import core.spell as spell
 import core.trait as trait
 import core.race as race
 import core.dnd_class as dnd_class
 import core.character as character
+import core.equipment as equipment
+import gui.tools as tools
+import gui.player.dialogs as dialogs
 
 from core.network.client import TCPClient
 from gui.player.setup_stat import setupStat
 from gui.player.setup_spell import setupSpell
 from gui.player.setup_trait import setupTrait
+from gui.player.setup_equipment import setupEquipment
             
 def abilityString(ability):
     mod = character.getModifier(ability)
@@ -25,7 +28,7 @@ def abilityString(ability):
     return mod
 
 class CharacterPlay(QtGui.QWidget):
-    def setupUi(self, character):
+    def setupUi(self, character, dm=False):
         self.character = character
         self.setObjectName(tools._fromUtf8("MainWindow"))
         self.resize(1005, 719)
@@ -38,18 +41,21 @@ class CharacterPlay(QtGui.QWidget):
         self.spell_parser = spell.SpellParser()
         self.trait_parser = trait.TraitParser()
         self.class_parser = dnd_class.DnDClassParser()
+        self.equipment_parser = equipment.EquipmentParser()
         setupStat(self)
         setupSpell(self)
         setupTrait(self)
+        setupEquipment(self)
         self.updateCharacter()
         self.updateStatList()
 
-        ip_address, ok = QtGui.QInputDialog.getText(
-            self, 'Connection to the DM', 
-            'IP address of the DM:')
+        if not dm:
+            ip_address, ok = QtGui.QInputDialog.getText(
+                self, 'Connection to the DM', 
+                'IP address of the DM:')
 
-        if ok and ip_address != '':
-            self.socket = TCPClient(self, ip_address)
+            if ok and ip_address != '':
+                self.socket = TCPClient(self, ip_address)
         
 
     def closeEvent(self, event):
@@ -151,6 +157,8 @@ class CharacterPlay(QtGui.QWidget):
         dialog = dialogs.HealDialog(self)
         hit, dice = dialog.setupUi()
         self.character.heal(hit, dice)
+        if hasattr(self, 'socket'):
+            self.socket.sendDataToDM("heal", hit)
         self.updateCharacter()
 
     def takeDamage(self, value):
