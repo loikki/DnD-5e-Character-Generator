@@ -114,7 +114,6 @@ class CharacterGenerator(object):
         self.page0_ability_value_5.setText(str(roll))
         roll = tools.rollAbility()
         self.page0_ability_value_6.setText(str(roll))
-        self.wizard.character.write()
 
     def changeRollStyle(self, style):
         self.page0_ability_value_1.clear()
@@ -406,6 +405,8 @@ class CharacterGenerator(object):
             self.page3_ideal_combo.addItem(ideal)
         self.changeBackgroundChoice(background)
         self.wizard.character.background.setBackgroundName(background)
+        money = self.background_parser.getMoney(background)
+        self.wizard.character.money = money
 
         
     def changeIdealDescription(self, ideal):

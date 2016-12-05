@@ -3,6 +3,7 @@ from string import lower
 from os.path import join
 
 import core.proficiency as pfy
+import gui.tools as tools
 
 class BackgroundParser():
     def __init__(self):
@@ -105,7 +106,13 @@ class BackgroundParser():
                 value[1].append(key.get('name'))
             list_choice.append(value)
         return list_choice
-        
+
+    def getMoney(self, background):
+        child = self.getBackground(background)
+        ret_dict = {'gp': 0, 'sp': 0, 'cp': 0}
+        for money in child.findall('money'):
+            ret_dict[money.get('unit')] = int(money.get('value'))
+        return tools.totalMoney(ret_dict)
 
 class Background():
     def __init__(self):

@@ -150,8 +150,6 @@ def setupStat(self):
     
     self.tab0_proficiencies_layout = QtGui.QGroupBox("Proficiencies", self.tab0)
     sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
-    sizePolicy.setHorizontalStretch(0)
-    sizePolicy.setVerticalStretch(0)
     sizePolicy.setHeightForWidth(self.tab0_proficiencies_layout.sizePolicy().hasHeightForWidth())
     self.tab0_proficiencies_layout.setSizePolicy(sizePolicy)
     self.tab0_proficiencies_layout.setObjectName(_fromUtf8("tab0_proficiencies_layout"))
@@ -160,6 +158,7 @@ def setupStat(self):
     self.gridLayout_11 = QtGui.QGridLayout(self.tab0_proficiencies_layout)
     self.gridLayout_11.setObjectName(_fromUtf8("gridLayout_11"))
     self.tab0_saving_layout = QtGui.QGroupBox("Saving Throws", self.tab0_proficiencies_layout)
+    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
     self.tab0_saving_layout.setSizePolicy(sizePolicy)
     self.tab0_saving_layout.setObjectName(_fromUtf8("tab0_saving_layout"))
     self.gridLayout_12 = QtGui.QGridLayout(self.tab0_saving_layout)
@@ -210,9 +209,12 @@ def setupStat(self):
     # 1st line
     self.long_rest_button = QtGui.QPushButton("Long Rest", self.tab0_right_layout)
     self.long_rest_button.clicked.connect(self.longRest)
+    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
+    self.long_rest_button.setSizePolicy(sizePolicy)
     self.tab0_hit_layout.addWidget(self.long_rest_button, 0, 0, 2, 1)
     self.heal_button = QtGui.QPushButton("Heal", self.tab0_right_layout)
     self.heal_button.clicked.connect(self.heal)
+    self.heal_button.setSizePolicy(sizePolicy)
     self.tab0_hit_layout.addWidget(self.heal_button, 2, 0, 2, 1)
     self.tab0_ac_label = QtGui.QLabel("Armor Class", self.tab0_right_layout)
     self.tab0_ac_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -256,6 +258,8 @@ def setupStat(self):
     self.verticalLayout_28.setObjectName(_fromUtf8("verticalLayout_28"))
     self.tab0_trait_tree = QtGui.QTreeWidget(self.tab0_trait_layout)
     self.tab0_trait_tree.setObjectName(_fromUtf8("tab0_trait_tree"))
+    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+    self.tab0_trait_tree.setSizePolicy(sizePolicy)
     item_0 = QtGui.QTreeWidgetItem(self.tab0_trait_tree)
     self.tab0_trait_tree.headerItem().setText(0, "Name")
     self.tab0_trait_tree.headerItem().setText(1, "Max uses")
@@ -272,6 +276,8 @@ def setupStat(self):
     self.horizontalLayout_41 = QtGui.QHBoxLayout(self.tab0_spell_layout)
     self.horizontalLayout_41.setObjectName(_fromUtf8("horizontalLayout_41"))
     self.tab0_spell_tree = QtGui.QTreeWidget(self.tab0_spell_layout)
+    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+    self.tab0_spell_tree.setSizePolicy(sizePolicy)
     self.tab0_spell_tree.setObjectName(_fromUtf8("tab0_spell_tree"))
     self.tab0_spell_tree.headerItem().setText(0, "Name")
     self.tab0_spell_tree.headerItem().setText(1, "Type")
@@ -299,7 +305,7 @@ def loadProficiency(self):
                 tools.choiceLabel(proficiency.SkillProficiency(i).name),
                 self.tab0_skill_layout)
             label.setAlignment(QtCore.Qt.AlignCenter)
-            self.gridLayout_13.addWidget(label, int(j/2), j%2)
+            self.gridLayout_13.addWidget(label, int(j/3), j%3)
             self.tab0_list_skill.append(label)
             j += 1
 
@@ -312,20 +318,23 @@ def loadProficiency(self):
                 tools.choiceLabel(proficiency.Ability(i).name),
                 self.tab0_saving_layout)
             label.setAlignment(QtCore.Qt.AlignCenter)
-            self.gridLayout_12.addWidget(label, int(j/2), j%2)
+            self.gridLayout_12.addWidget(label, int(j/3), j%3)
             self.tab0_list_saving.append(label)
             j += 1
 
     # Object
     weapon = prof.weapons
     j = tools.createObjectProficiencyLabel(
-        self, weapon, proficiency.WeaponProficiency, parent='play')
+        self, weapon, proficiency.WeaponProficiency, parent='play',
+        column=3)
     tool = prof.tools
     j = tools.createObjectProficiencyLabel(
-        self, tool, proficiency.ToolProficiency, j, parent='play')
+        self, tool, proficiency.ToolProficiency, j, parent='play',
+        column=3)
     armor = prof.armors
     j = tools.createObjectProficiencyLabel(
-        self, armor, proficiency.ArmorProficiency, j, parent='play')
+        self, armor, proficiency.ArmorProficiency, j, parent='play',
+        column=3)
 
     # Languages        
     lang = prof.languages
@@ -336,6 +345,6 @@ def loadProficiency(self):
                 tools.choiceLabel(proficiency.LanguageProficiency(i).name),
                 self.tab0_language_layout)
             label.setAlignment(QtCore.Qt.AlignCenter)
-            self.lang_gridLayout.addWidget(label, int(j/2), j%2)
+            self.lang_gridLayout.addWidget(label, int(j/3), j%3)
             self.tab0_list_language.append(label)
             j += 1

@@ -48,6 +48,7 @@ class CharacterPlay(QtGui.QWidget):
         setupEquipment(self)
         self.updateCharacter()
         self.updateStatList()
+        self.updateMoney()
 
         if not dm:
             ip_address, ok = QtGui.QInputDialog.getText(
@@ -401,3 +402,57 @@ class CharacterPlay(QtGui.QWidget):
         item = tree.currentItem()
         root.removeChild(item)
         
+    def buyEquipment(self):
+        index = self.tab3_tabwidget.currentIndex()
+        if index == 0: # weapon
+            item = self.tab3_tab0_list_tree.currentItem()
+        elif index == 1: # armor
+            item = self.tab3_tab1_list_tree.currentItem()
+        elif index == 2: # gear
+            item = self.tab3_tab2_list_tree.currentItem()
+        default = tools.getMoneyFromString(str(item.text(1)))
+        dialog = dialogs.MoneyDialog(self)
+        ok, cost = dialog.setupUi("Buy Equipment", default)
+        cost = tools.totalMoney(cost)
+        if cost > self.character.money:
+            ok = False
+            QtGui.QMessageBox.information(
+                self, "You are POOR!", "You do not have enough money!")
+        
+        if ok:
+            self.character.money -= cost
+            self.addEquipment()
+            self.updateMoney()
+
+    def sellEquipment(self):
+        index = self.tab3_tabwidget.currentIndex()
+        if index == 0: # weapon
+            item = self.tab3_tab0_owned_tree.currentItem()
+        elif index == 1: # armor
+            item = self.tab3_tab1_owned_tree.currentItem()
+        elif index == 2: # gear
+            item = self.tab3_tab2_owned_tree.currentItem()
+        default = tools.getMoneyFromString(str(item.text(1)))
+        dialog = dialogs.MoneyDialog(self)
+        ok, cost = dialog.setupUi("Sell Equipment", default)
+        cost = tools.totalMoney(cost)
+        if ok:
+            self.character.money += cost
+            self.removeEquipment()
+            self.updateMoney()
+
+
+    def updateMoney(self):
+        temp = tools.formatMoney(self.character.money)
+        money = str(temp['gp']) + ' gp, '
+        money = money + str(temp['sp']) + ' sp, '
+        money = money + str(temp['cp']) + ' cp'
+        self.tab3_gold_label.setText(money)
+
+    def earnMoney(self):
+        dialog = dialogs.MoneyDialog(self)
+        ok, cost = dialog.setupUi("Earn/Loose Money", 0)
+        cost = tools.totalMoney(cost)
+        if ok:
+            self.character.money += cost
+            self.updateMoney()

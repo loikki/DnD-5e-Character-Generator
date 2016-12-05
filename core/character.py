@@ -42,6 +42,7 @@ class Character:
         self.equipment = None
 
         # description
+        self.money = 0
         self.name = None
         self.player = None
         self.campaign = None

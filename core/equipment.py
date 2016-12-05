@@ -63,5 +63,24 @@ class EquipmentParser():
         ind_open = temp.index("<description>")
         ind_close = temp.index("</description>")
         description += temp[ind_open+13:ind_close]
+        if child.tag == 'weapon':
+            description += "<p><b> Properties </b>"
+            properties = child.get('properties')
+            thrown = 'Thrown'
+            ammunition = 'Ammunition'
+            if thrown in properties:
+                ind = properties.find(thrown) + len(thrown)
+                temp = properties[:ind]
+                temp += " (Range %s)" % child.get('range')
+                temp += properties[ind:]
+                properties = temp
+            if ammunition in properties:
+                ind = properties.find(ammunition) + len(ammunition)
+                temp = properties[:ind]
+                temp += " (Range %s)" % child.get('range')
+                temp += properties[ind:]
+                properties = temp
+            description += properties
+            description += "</p>"
 
         return description

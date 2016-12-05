@@ -31,8 +31,8 @@ class HealDialog(QtGui.QDialog):
         self.button.rejected.connect(self.reject)
         self.layout.addWidget(self.button)
 
-        self.exec_()
-        if self.le1.text() == '':
+        ok = self.exec_()
+        if self.le1.text() == '' or not ok:
             self.le1.setText('0')
         return int(self.le1.text()), int(self.c1.currentText())
 
@@ -130,3 +130,38 @@ class DeathDialog(QtGui.QDialog):
         elif self.nber_failure >= 3:
             self.result = True
             self.accept()
+
+
+class MoneyDialog(QtGui.QDialog):
+    def setupUi(self, title, default):
+        self.setWindowTitle(title)
+
+        default = tools.formatMoney(default)
+        self.layout = QtGui.QVBoxLayout(self)
+        self.form = QtGui.QFormLayout()
+        self.layout.addLayout(self.form)
+        self.label_g = QtGui.QLabel("Gold piece:", self)
+        self.input_g = QtGui.QLineEdit(str(default['gp']), self)
+        self.form.addRow(self.label_g, self.input_g)
+
+        self.label_s = QtGui.QLabel("Silver piece:", self)
+        self.input_s = QtGui.QLineEdit(str(default['sp']), self)
+        self.form.addRow(self.label_s, self.input_s)
+
+        self.label_c = QtGui.QLabel("Copper piece:", self)
+        self.input_c = QtGui.QLineEdit(str(default['cp']), self)
+        self.form.addRow(self.label_c, self.input_c)
+
+        self.button = QtGui.QDialogButtonBox(
+            QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel,
+            QtCore.Qt.Horizontal, self)
+
+        self.button.accepted.connect(self.accept)
+        self.button.rejected.connect(self.reject)
+        self.layout.addWidget(self.button)
+
+        ok = self.exec_()
+        return_value = {'gp': int(self.input_g.text()),
+                        'sp': int(self.input_s.text()),
+                        'cp': int(self.input_c.text())}
+        return ok, return_value

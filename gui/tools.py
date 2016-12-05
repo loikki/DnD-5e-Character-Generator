@@ -10,7 +10,32 @@ except AttributeError:
     def _fromUtf8(s):
         return s
 
+def totalMoney(money):
+    """ Transform all the money in cp
+    """
+    value = money['cp'] + 10*money['sp']
+    return value + 100*money['gp']    
 
+def formatMoney(money):
+    ret_dict = {'gp': 0, 'sp': 0, 'cp': 0}
+    ret_dict['gp'] = int(money)/100
+    money -= ret_dict['gp']*100
+    ret_dict['sp'] = int(money)/10
+    money -= ret_dict['sp']*10
+    ret_dict['cp'] = int(money)
+    return ret_dict
+
+def getMoneyFromString(money):
+    temp = money.split(',')
+    money = 0
+    for i in temp:
+        if 'gp' in i:
+            money += 100*int(i.split(' ')[0])
+        elif 'sp' in i:
+            money += 10*int(i.split(' ')[0])
+        elif 'cp' in i:
+            money += int(i.split(' ')[0])
+    return money
 
 def rollDice(number_dice, type_dice):
     """ roll (number_dice)d(type_dice)
@@ -56,7 +81,9 @@ def getLanguages(allow_exotic=False):
     return languages
 
 
-def createObjectProficiencyLabel(self, list_prof, enum_prof, current_index=0, parent='loader'):
+def createObjectProficiencyLabel(
+        self, list_prof, enum_prof, current_index=0, parent='loader',
+        column=2):
     """
     :param list list_prof: Proficiency list from the class Proficiency
     :param Enum enum_prof: Enum proficiency class
@@ -77,7 +104,8 @@ def createObjectProficiencyLabel(self, list_prof, enum_prof, current_index=0, pa
                 object_layout)
             label.setAlignment(QtCore.Qt.AlignCenter)
             grid.addWidget(
-                label, int(current_index/2), current_index%2)
+                label, int(current_index/column),
+                current_index%column)
             list_object.append(label)
             current_index += 1
     return current_index
