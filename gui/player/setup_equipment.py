@@ -26,6 +26,8 @@ def setupEquipment(self):
     self.horizontalLayout_31 = QtGui.QHBoxLayout(self.tab3_tab0_list_layout)
     self.horizontalLayout_31.setObjectName(tools._fromUtf8("horizontalLayout_31"))
     self.tab3_tab0_list_tree = QtGui.QTreeWidget(self.tab3_tab0_list_layout)
+    self.tab3_tab0_list_tree.currentItemChanged.connect(
+        self.updateEquipmentDescription)
     self.tab3_tab0_list_tree.setRootIsDecorated(True)
     self.tab3_tab0_list_tree.setObjectName(tools._fromUtf8("tab3_tab0_list_tree"))
     self.horizontalLayout_31.addWidget(self.tab3_tab0_list_tree)
@@ -43,6 +45,8 @@ def setupEquipment(self):
     self.horizontalLayout_32 = QtGui.QHBoxLayout(self.tab3_tab0_owned_layout)
     self.horizontalLayout_32.setObjectName(tools._fromUtf8("horizontalLayout_32"))
     self.tab3_tab0_owned_tree = QtGui.QTreeWidget(self.tab3_tab0_owned_layout)
+    self.tab3_tab0_owned_tree.currentItemChanged.connect(
+        self.updateEquipmentDescription)
     self.tab3_tab0_owned_tree.setSortingEnabled(True)
     self.tab3_tab0_owned_tree.setObjectName(tools._fromUtf8("tab3_tab0_owned_tree"))
     self.horizontalLayout_32.addWidget(self.tab3_tab0_owned_tree)
@@ -72,6 +76,8 @@ def setupEquipment(self):
     self.horizontalLayout_29 = QtGui.QHBoxLayout(self.tab3_tab1_list_layout)
     self.horizontalLayout_29.setObjectName(tools._fromUtf8("horizontalLayout_29"))
     self.tab3_tab1_list_tree = QtGui.QTreeWidget(self.tab3_tab1_list_layout)
+    self.tab3_tab1_list_tree.currentItemChanged.connect(
+        self.updateEquipmentDescription)
     self.tab3_tab1_list_tree.setSortingEnabled(True)
     self.tab3_tab1_list_tree.setRootIsDecorated(True)
     self.tab3_tab1_list_tree.setObjectName(tools._fromUtf8("tab3_tab1_list_tree"))
@@ -95,6 +101,8 @@ def setupEquipment(self):
     self.horizontalLayout_30 = QtGui.QHBoxLayout(self.tab3_tab1_owned_layout)
     self.horizontalLayout_30.setObjectName(tools._fromUtf8("horizontalLayout_30"))
     self.tab3_tab1_owned_tree = QtGui.QTreeWidget(self.tab3_tab1_owned_layout)
+    self.tab3_tab1_owned_tree.currentItemChanged.connect(
+        self.updateEquipmentDescription)
     self.tab3_tab1_owned_tree.setSortingEnabled(True)
     self.tab3_tab1_owned_tree.setObjectName(tools._fromUtf8("tab3_tab1_owned_tree"))
     self.tab3_tab1_owned_tree.headerItem().setText(0, "Name")
@@ -119,6 +127,8 @@ def setupEquipment(self):
     self.horizontalLayout_28 = QtGui.QHBoxLayout(self.tab3_tab2_list_layout)
     self.horizontalLayout_28.setObjectName(tools._fromUtf8("horizontalLayout_28"))
     self.tab3_tab2_list_tree = QtGui.QTreeWidget(self.tab3_tab2_list_layout)
+    self.tab3_tab2_list_tree.currentItemChanged.connect(
+        self.updateEquipmentDescription)
     self.tab3_tab2_list_tree.setSortingEnabled(True)
     self.tab3_tab2_list_tree.setObjectName(tools._fromUtf8("tab3_tab2_list_tree"))
     self.tab3_tab2_list_tree.headerItem().setText(0, "Name")
@@ -133,6 +143,8 @@ def setupEquipment(self):
     self.verticalLayout_23 = QtGui.QVBoxLayout(self.tab3_tab2_owned_layout)
     self.verticalLayout_23.setObjectName(tools._fromUtf8("verticalLayout_23"))
     self.tab3_tab2_owned_tree = QtGui.QTreeWidget(self.tab3_tab2_owned_layout)
+    self.tab3_tab2_owned_tree.currentItemChanged.connect(
+        self.updateEquipmentDescription)
     self.tab3_tab2_owned_tree.setSortingEnabled(True)
     self.tab3_tab2_owned_tree.setObjectName(tools._fromUtf8("tab3_tab2_owned_tree"))
     self.tab3_tab2_owned_tree.headerItem().setText(0, "Name")
@@ -189,6 +201,7 @@ def setupEquipment(self):
     self.tab3_buy_layout.addWidget(self.tab3_buy_button)
     self.tab3_add_button = QtGui.QPushButton("Add", self.tab3_description_layout)
     self.tab3_add_button.setObjectName(tools._fromUtf8("tab3_add_button"))
+    self.tab3_add_button.clicked.connect(self.addEquipment)
     self.tab3_buy_layout.addWidget(self.tab3_add_button)
     self.horizontalLayout_25.addLayout(self.tab3_buy_layout)
     self.tab3_description = QtGui.QTextBrowser(self.tab3_description_layout)
@@ -206,6 +219,7 @@ def setupEquipment(self):
     self.tab3_sell_layout.addWidget(self.tab3_sell_button)
     self.tab3_remove_button = QtGui.QPushButton("Remove", self.tab3_description_layout)
     self.tab3_remove_button.setObjectName(tools._fromUtf8("tab3_remove_button"))
+    self.tab3_remove_button.clicked.connect(self.removeEquipment)
     self.tab3_sell_layout.addWidget(self.tab3_remove_button)
     self.horizontalLayout_25.addLayout(self.tab3_sell_layout)
     self.verticalLayout_6.addWidget(self.tab3_description_layout)

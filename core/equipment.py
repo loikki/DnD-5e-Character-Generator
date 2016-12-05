@@ -54,7 +54,7 @@ class EquipmentParser():
         print "TODO"
 
     def getDescription(self, name):
-        child = self.getSpell(name)
+        child = self.getEquipment(name)
         if child == None:
             return None
         description = "<p><b><u>" + str(name) + "</u></b></p>\n"

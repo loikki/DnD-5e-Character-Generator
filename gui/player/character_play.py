@@ -358,3 +358,46 @@ class CharacterPlay(QtGui.QWidget):
             return
         description = self.trait_parser.getDescription(value.text(0))
         self.tab2_description.setText(description)
+
+
+    # ------------------------- EQUIPMENT -------------------------
+
+    def updateEquipmentDescription(self, value):
+        if value is None:
+            self.tab3_description.clear()
+            return
+        description = self.equipment_parser.getDescription(value.text(0))
+        self.tab3_description.setText(description)
+
+    def addEquipment(self):
+        index = self.tab3_tabwidget.currentIndex()
+        if index == 0: # weapon
+            tree = self.tab3_tab0_owned_tree
+            item = self.tab3_tab0_list_tree.currentItem()
+        elif index == 1: # armor
+            tree = self.tab3_tab1_owned_tree
+            item = self.tab3_tab1_list_tree.currentItem()
+        elif index == 2: # gear
+            tree = self.tab3_tab2_owned_tree
+            item = self.tab3_tab2_list_tree.currentItem()
+
+        if item == None:
+            return
+        
+        root = tree.invisibleRootItem()
+        temp_item = item.clone()
+        root.addChild(temp_item)
+
+    def removeEquipment(self):
+        index = self.tab3_tabwidget.currentIndex()
+        if index == 0: # weapon
+            tree = self.tab3_tab0_owned_tree
+        elif index == 1: # armor
+            tree = self.tab3_tab1_owned_tree
+        elif index == 2: # gear
+            tree = self.tab3_tab2_owned_tree
+        
+        root = tree.invisibleRootItem()
+        item = tree.currentItem()
+        root.removeChild(item)
+        
