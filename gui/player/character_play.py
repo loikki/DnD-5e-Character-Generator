@@ -42,6 +42,7 @@ class CharacterPlay(QtGui.QWidget):
         self.trait_parser = trait.TraitParser()
         self.class_parser = dnd_class.DnDClassParser()
         self.equipment_parser = equipment.EquipmentParser()
+
         setupStat(self)
         setupSpell(self)
         setupTrait(self)
@@ -388,6 +389,7 @@ class CharacterPlay(QtGui.QWidget):
         root = tree.invisibleRootItem()
         temp_item = item.clone()
         root.addChild(temp_item)
+        self.updateCarryCapacity()
 
     def removeEquipment(self):
         index = self.tab3_tabwidget.currentIndex()
@@ -401,6 +403,7 @@ class CharacterPlay(QtGui.QWidget):
         root = tree.invisibleRootItem()
         item = tree.currentItem()
         root.removeChild(item)
+        self.updateCarryCapacity()
         
     def buyEquipment(self):
         index = self.tab3_tabwidget.currentIndex()
@@ -443,11 +446,10 @@ class CharacterPlay(QtGui.QWidget):
 
 
     def updateMoney(self):
-        temp = tools.formatMoney(self.character.money)
-        money = str(temp['gp']) + ' gp, '
-        money = money + str(temp['sp']) + ' sp, '
-        money = money + str(temp['cp']) + ' cp'
+        money = tools.generateMoneyString(self.character.money)
         self.tab3_gold_label.setText(money)
+        if hasattr(self, 'socket'):
+            self.socket.sendDataToDM("money", self.character.money)
 
     def earnMoney(self):
         dialog = dialogs.MoneyDialog(self)
@@ -456,3 +458,38 @@ class CharacterPlay(QtGui.QWidget):
         if ok:
             self.character.money += cost
             self.updateMoney()
+
+    def updateCarryCapacity(self):
+        weight = 0
+        root = self.tab3_tab0_owned_tree.invisibleRootItem()
+        # weapon
+        for i in range(root.childCount()):
+            text = str(root.child(i).text(3)).split(" ")[0]
+            if not "-" in text:
+                weight += float(text)
+
+        # armor
+        root = self.tab3_tab1_owned_tree.invisibleRootItem()
+        for i in range(root.childCount()):
+            text = str(root.child(i).text(5)).split(" ")[0]
+            if not "-" in text:
+                weight += float(text)
+
+        # gear
+        root = self.tab3_tab2_owned_tree.invisibleRootItem()
+        for i in range(root.childCount()):
+            text = str(root.child(i).text(2)).split(" ")[0]
+            if not "-" in text:
+                weight += float(text)
+
+        text = " "*10 + "Carry: " + str(weight) + "/"
+        text += str(self.character.getCarryingCapacity())
+        text += " lb."
+        self.tab3_carry_label.setText(text)
+        if weight > self.character.getCarryingCapacity():
+            self.tab3_carry_label.setStyleSheet(
+                "QLabel { color : red; }")
+        else:
+            self.tab3_carry_label.setStyleSheet(
+                "QLabel { color : black; }")
+

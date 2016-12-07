@@ -114,6 +114,18 @@ class BackgroundParser():
             ret_dict[money.get('unit')] = int(money.get('value'))
         return tools.totalMoney(ret_dict)
 
+    def getEquipment(self, background):
+        child = self.getBackground(background)
+        items = []
+        equipment = child.find('equipment')
+        for item in equipment:
+            quantity = item.get('quantity')
+            if quantity is None:
+                quantity = 1
+            for i in range(int(quantity)):
+                items.append(item.get('name'))
+        return items
+
 class Background():
     def __init__(self):
         self.background_name = None
@@ -183,3 +195,17 @@ class Background():
                 i += value[2]
 
         return proficiency, diff
+
+
+    def getEquipment(self, parser=None):
+        if parser is None:
+            parser = BackgroundParser()
+        eq = parser.getEquipment(self.background_name)
+        if len(self.choice) > 0:
+            choice = parser.getChoice(self.background_name)
+            i = 0
+            for value in choice:
+                if value[0] == 'gear':
+                    eq.extend(self.choice[i:i+value[2]])
+                i += value[2]
+        return eq

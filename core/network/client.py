@@ -16,11 +16,13 @@ class TCPClient(QtNetwork.QTcpSocket):
 
     def readDataFromDM(self):
         text = str(self.readAll())
-        print text
         text = text.split(",", 1)
         if 'takeDamage' in text[0]:
             self.parent.takeDamage(int(text[1]))
-
+        elif "money" in text[0]:
+            self.parent.character.money = int(text[1])
+            self.parent.updateMoney()
+            
     def sendInitDataToDM(self):
         character = deepcopy(self.parent.character)
         character.image = None
@@ -30,3 +32,6 @@ class TCPClient(QtNetwork.QTcpSocket):
     def sendDataToDM(self, function, value):
         if "heal" in function:
             self.writeData('heal, ' + str(value))
+
+        if "money" in function:
+            self.writeData("money, " + str(value))

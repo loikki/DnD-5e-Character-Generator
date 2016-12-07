@@ -45,7 +45,7 @@ class DungeonMasterGui():
         for connection, character in self.server.list_socket:
             value = [character.name, character.player,
                      character.dnd_class.class_name, None, None,
-                     None, None]
+                     tools.generateMoneyString(character.money), None]
             for i in range(len(value)):
                 if value[i] is None:
                     value[i] = ""

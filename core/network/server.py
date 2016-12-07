@@ -29,6 +29,8 @@ class TCPServer(QtNetwork.QTcpServer):
             character = pickle.loads(text)
         elif "heal" in str_type:
             character.dnd_class.hit_point += int(text)
+        elif "money" in str_type:
+            character.money = int(text)
         item_socket[1] = character
         self.parent.updateList()
 
@@ -42,5 +44,8 @@ class TCPServer(QtNetwork.QTcpServer):
         if "takeDamage" in function:
             self.list_socket[j][1].dnd_class.hit_point -= value
             self.list_socket[j][0].write("takeDamage, " + str(value))
+        elif "money" in function:
+            self.list_socket[j][1].money = value
+            self.list_socket[j][0].write("money, " + str(value))
 
         self.parent.updateList()

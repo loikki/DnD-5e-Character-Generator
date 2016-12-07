@@ -3,6 +3,8 @@ import random
 from string import replace, lower
 import math
 
+import core.proficiency as pfy
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -37,6 +39,14 @@ def getMoneyFromString(money):
             money += int(i.split(' ')[0])
     return money
 
+def generateMoneyString(money):
+    if isinstance(money, int):
+        money = formatMoney(money)
+    text = str(money['gp']) + " gp, "
+    text += str(money['sp']) + " sp, "
+    text += str(money['cp']) + " cp"
+    return text
+    
 def rollDice(number_dice, type_dice):
     """ roll (number_dice)d(type_dice)
     :param int number_dice: Number of dice to roll
@@ -68,6 +78,17 @@ def choiceLabel(title):
     title = title.title()
     return replace(title, '_', ' ')
 
+def getWeapons(weapon_type):
+    weapons = []
+    if weapon_type == 'simple':
+        for i in range(15):
+            weapons.append(choiceLabel(pfy.WeaponProficiency(i).name))
+    elif weapon_type == 'martial':
+        for i in range(15, 38):
+            weapons.append(choiceLabel(pfy.WeaponProficiency(i).name))
+
+    return weapons
+            
 def getLanguages(allow_exotic=False):
     """ Return the list of available languages
     :param bool allow_exotic: Add the exotic languages to the list

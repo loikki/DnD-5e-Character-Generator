@@ -79,6 +79,7 @@ class CharacterGenerator(object):
     # tool bar
     def saveCharacter(self):
         self.wizard.character.setHitPoint()
+        self.wizard.character.setInitialEquipment()
         pickle.dump(self.wizard.character, open(
             os.path.join("data", "saved", "player", self.wizard.character.name + ".p"), 'wb'))
         self.mainWindow.loadListCharacters()
@@ -273,6 +274,10 @@ class CharacterGenerator(object):
                 combo.activated.connect(self.makeRaceChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], tools.getLanguages())
+                elif choice[0] == 'gear' and choice[1][0] == 'Simple Weapon':
+                    choice = (choice[0], tools.getWeapons('simple'))
+                elif choice[0] == 'gear' and choice[1][0] == 'Martial Weapon':
+                    choice = (choice[0], tools.getWeapons('martial'))
                 for i in choice[1]:
                     combo.addItem(i)
                 self.page1_choices_layout.addWidget(combo, int(j/4), j%4)
@@ -365,6 +370,10 @@ class CharacterGenerator(object):
                 combo.activated[str].connect(self.makeClassChoice)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], tools.getLanguages())
+                elif choice[0] == 'gear' and choice[1][0] == 'Simple Weapon':
+                    choice = (choice[0], tools.getWeapons('simple'))
+                elif choice[0] == 'gear' and choice[1][0] == 'Martial Weapon':
+                    choice = (choice[0], tools.getWeapons('martial'))
                 for i in choice[1]:
                     combo.addItem(i)
                 self.page2_choices_layout.addWidget(combo, j, 1)
@@ -472,6 +481,10 @@ class CharacterGenerator(object):
                 combo = QtGui.QComboBox(self.page3_choice_layout)
                 if choice[0] == 'language' and choice[1][0] == 'any':
                     choice = (choice[0], tools.getLanguages())
+                elif choice[0] == 'gear' and choice[1][0] == 'Simple Weapon':
+                    choice = (choice[0], tools.getWeapons('simple'))
+                elif choice[0] == 'gear' and choice[1][0] == 'Martial Weapon':
+                    choice = (choice[0], tools.getWeapons('martial'))
                 for i in choice[1]:
                     combo.addItem(i)
                 combo.activated[str].connect(self.makeBackgroundChoice)

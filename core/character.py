@@ -39,7 +39,7 @@ class Character:
         self.race = Race()
         self.dnd_class = DnDClass()
         self.background = Background()
-        self.equipment = None
+        self.equipment = []
 
         # description
         self.money = 0
@@ -56,6 +56,9 @@ class Character:
         self.notable_features = None
         self.image = None
 
+    def getCarryingCapacity(self):
+        return 15*self.getStrength()
+
     def heal(self, value, dice):
         hit, max_hit = self.getHitPoint()
         self.dnd_class.hit_dice -= dice
@@ -64,6 +67,12 @@ class Character:
         else:
             self.dnd_class.hit_point = max_hit
 
+    def setInitialEquipment(self):
+        temp = self.background.getEquipment()
+        self.equipment.extend(temp)
+        temp = self.dnd_class.getEquipment()
+        self.equipment.extend(temp)
+        
     def getHitDice(self):
         hit_dice = [None]*3
         hit_dice[0], hit_dice[2] = self.dnd_class.getHitDice()

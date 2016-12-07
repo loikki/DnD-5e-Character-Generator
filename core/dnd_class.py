@@ -116,6 +116,17 @@ class DnDClassParser:
             list_choice.append(value)
         return list_choice
 
+    def getEquipment(self, dnd_class):
+        child = self.getClass(dnd_class)
+        items = []
+        equipment = child.find('equipment')
+        for item in equipment:
+            quantity = item.get('quantity')
+            if quantity is None:
+                quantity = 1
+            for i in range(int(quantity)):
+                items.append(item.get('name'))
+        return items
 
 class DnDClass:
     def __init__(self):
@@ -170,3 +181,15 @@ class DnDClass:
         hit_dice[0] = self.hit_dice
         hit_dice[1] = self.parser.getHitDice(self.class_name)
         return hit_dice
+
+
+    def getEquipment(self):
+        eq = self.parser.getEquipment(self.class_name)
+        if len(self.choice) > 0:
+            choice = self.parser.getChoice(self.class_name)
+            i = 0
+            for value in choice:
+                if value[0] == 'gear':
+                    eq.extend(self.choice[i:i+value[2]])
+                i += value[2]
+        return eq

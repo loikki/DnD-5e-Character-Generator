@@ -161,9 +161,16 @@ def setupEquipment(self):
     self.tab3_gold_layout.setContentsMargins(0, 0, -1, -1)
     # money
     self.tab3_gold_layout.setObjectName(tools._fromUtf8("tab3_gold_layout"))
-    spacerItem9 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-    self.tab3_gold_layout.addItem(spacerItem9)
-    self.tab3_gold_label = QtGui.QLabel("1gp, 2sp, 1cp", self.tab3)
+    self.tab3_carry_label = QtGui.QLabel("", self.tab3)
+    sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
+    self.tab3_carry_label.setSizePolicy(sizePolicy)
+    self.tab3_carry_label.setAlignment(QtCore.Qt.AlignCenter)
+    self.tab3_carry_label.setObjectName(tools._fromUtf8("tab3_carry_label"))
+    self.tab3_gold_layout.addWidget(self.tab3_carry_label)
+    carry_spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
+    self.tab3_gold_layout.addItem(carry_spacer)
+
+    self.tab3_gold_label = QtGui.QLabel("", self.tab3)
     sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
     sizePolicy.setHorizontalStretch(0)
     sizePolicy.setVerticalStretch(0)
@@ -228,6 +235,7 @@ def setupEquipment(self):
     self.verticalLayout_6.addWidget(self.tab3_description_layout)
 
     generateEquipmentList(self)
+    generateInitialEquipment(self)
     self.main_tab.addTab(self.tab3, "Equipment")
 
 def generateEquipmentList(self):
@@ -242,3 +250,35 @@ def generateEquipmentList(self):
     gear = self.equipment_parser.getListGear()
     for i in gear:
         item = QtGui.QTreeWidgetItem(self.tab3_tab2_list_tree, i)
+
+def generateInitialEquipment(self):
+    for item in self.character.equipment:
+        item_parser = self.equipment_parser.getEquipment(item)
+        if item_parser.tag == 'gear':
+            list_string = [item_parser.get('name'),
+                           item_parser.get('cost'),
+                           item_parser.get('weight'),
+                           item_parser.get('quantity')]
+            item = QtGui.QTreeWidgetItem(
+                self.tab3_tab2_owned_tree, list_string)
+        elif item_parser.tag == 'armor':
+            list_string = [item_parser.get('name'),
+                           item_parser.get('cost'),
+                           item_parser.get('ac'),
+                           item_parser.get('strength'),
+                           item_parser.get('stealth'),
+                           item_parser.get('weight'),
+                           item_parser.get('type')]
+            item = QtGui.QTreeWidgetItem(
+                self.tab3_tab1_owned_tree, list_string)
+        elif item_parser.tag == 'weapon':
+            list_string = [item_parser.get('name'),
+                           item_parser.get('cost'),
+                           item_parser.get('damage'),
+                           item_parser.get('weight'),
+                           item_parser.get('properties'),
+                           item_parser.get('type')]
+            item = QtGui.QTreeWidgetItem(
+                self.tab3_tab0_owned_tree, list_string)
+
+        self.updateCarryCapacity()
